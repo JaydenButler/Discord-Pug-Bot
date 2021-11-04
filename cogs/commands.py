@@ -45,19 +45,14 @@ class CommandsCog(commands.Cog):
         if currentQueue.GetQueueSize() > 1:
 
             teams = currentQueue.DoQueuePop()
-            print("Point 1")
             
             teamOnePlayersStr = ""
             for player in teams[0].GetPlayers():
-                teamOnePlayersStr += f"<@{player.id}\n"
-
-            print("Point 2")
+                teamOnePlayersStr += f"<@{player.id}>\n"
 
             teamTwoPlayersStr = ""
             for player in teams[1].GetPlayers():
-                teamTwoPlayersStr += f"<@{player.id}\n"
-
-            print("Point 3")
+                teamTwoPlayersStr += f"<@{player.id}>\n"
 
             embed = discord.Embed(title="The queue has popped!")
             embed.add_field(name="Team 1", value=teamOnePlayersStr, inline=True)
@@ -67,7 +62,15 @@ class CommandsCog(commands.Cog):
         else:
             await ctx.reply("Queue is too small to pop... Get some friends to play with!")
 
-    
+    @commands.command()
+    async def reload(self, ctx: commands.Context, *, cog: str):
+        try:
+            self.bot.unload_extension("cogs." + cog)
+            self.bot.load_extension("cogs." + cog)
+        except Exception as e:
+            await ctx.send(f'**`ERROR:`** {type(e).__name__} - {e}')
+        else:
+            await ctx.send('**`SUCCESS`**')
     
 def setup(bot):
     bot.add_cog(CommandsCog(bot))
