@@ -1,10 +1,9 @@
 import discord
 from discord.ext import commands
 from discord.ext.commands.cog import Cog
+from cogs.queue import queueManager
 
-from cogs.queue import Player, Queue
-
-currentQueue = Queue()
+from cogs.queue import Player
 
 class CommandsCog(commands.Cog):
     def __init__(self, bot):
@@ -14,11 +13,13 @@ class CommandsCog(commands.Cog):
     async def q(self, ctx: commands.Context):
         newPlayer = Player(ctx.author.id)
 
-        currentQueue.AddPlayer(newPlayer)
+        await queueManager.GetCurrentQueue().AddPlayer(ctx, newPlayer)
 
-        playersNeeded = 6 - currentQueue.GetQueueSize()
+        currentQueueSize = queueManager.GetCurrentQueue().GetQueueSize()
 
-        embed = discord.Embed(title="Someone has joined the queue (1/6)", description=f"{ctx.author.mention} has joined the queue")
+        playersNeeded = 6 - currentQueueSize
+
+        embed = discord.Embed(title=f"Someone has joined the queue ({currentQueueSize}/6)", description=f"{ctx.author.mention} has joined the queue")
         embed.set_footer(text=f"{playersNeeded} more players needed to pop!")
 
         await ctx.reply("", embed=embed)
@@ -27,13 +28,13 @@ class CommandsCog(commands.Cog):
     async def status(self, ctx):
         playersStr = ""
         
-        if not currentQueue.players:
+        if not queueManager.GetCurrentQueue().players:
             playersStr = "Queue is empty"
         else:
-            for player in currentQueue.players:
+            for player in queueManager.GetCurrentQueue().players:
                 playersStr += f"<@{player.id}>\n"
         
-        playersNeeded = 6 - currentQueue.GetQueueSize()
+        playersNeeded = 6 - queueManager.GetCurrentQueue().GetQueueSize()
         
         embed = discord.Embed(title="Current members in the queue", description=playersStr)
         embed.set_footer(text=f"{playersNeeded} more players needed to pop!")
@@ -42,9 +43,9 @@ class CommandsCog(commands.Cog):
 
     @commands.command()
     async def force_pop(self, ctx):
-        if currentQueue.GetQueueSize() > 1:
+        if queueManager.GetCurrentQueue().GetQueueSize() > 1:
 
-            teams = currentQueue.DoQueuePop()
+            teams = queueManager.GetCurrentQueue().DoQueuePop()
             
             teamOnePlayersStr = ""
             for player in teams[0].GetPlayers():
