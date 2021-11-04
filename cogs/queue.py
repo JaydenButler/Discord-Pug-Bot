@@ -16,9 +16,6 @@ class Queue():
     
     async def AddPlayer(self, ctx, player):
         self.players.append(player)
-        if(self.GetQueueSize == GAME_SIZE):
-            asyncio.sleep(1)
-            await queueManager.GetCurrentQueue().DoQueuePop(ctx=ctx)
 
     def RemovePlayer(self, player):
         self.players.remove(player)  
@@ -28,6 +25,10 @@ class Queue():
             return 0;
         else:
             return len(self.players)
+    
+    async def CheckQueueFull(self, ctx):
+        if(self.GetQueueSize() == GAME_SIZE):
+            await queueManager.GetCurrentQueue().DoQueuePop(ctx=ctx)
 
     async def DoQueuePop(self, ctx: commands.Context):
         print("A queue has popped!")

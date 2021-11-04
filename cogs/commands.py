@@ -24,6 +24,8 @@ class CommandsCog(commands.Cog):
 
         await ctx.reply("", embed=embed)
 
+        await queueManager.GetCurrentQueue().CheckQueueFull(ctx)
+
     @commands.command()
     async def status(self, ctx):
         playersStr = ""
