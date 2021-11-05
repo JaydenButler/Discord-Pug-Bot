@@ -39,6 +39,7 @@ class Queue():
         if(self.GetQueueSize() == GAME_SIZE):
             await queueManager.GetCurrentQueue().PostQueueTypeVote(ctx)
 
+    #Send this match info to the database
     async def DoRandomTeamSelection(self, ctx: commands.Context):
         print("A queue has popped!")
 
@@ -65,7 +66,12 @@ class Queue():
 
             playersToAdd -= 1
 
-        await self.PostQueue(ctx, [teamOne, teamTwo])
+
+        newMatch = Match(teamOne, teamTwo)
+
+        queueManager.CreateNewQueue()
+
+        await self.PostQueue(ctx, newMatch)
         
 
     async def PostQueueTypeVote(self, ctx):
@@ -78,13 +84,13 @@ class Queue():
         await ctx.send("", embed=embed)
 
 
-    async def PostQueue(self, ctx: commands.Context, teams):
+    async def PostQueue(self, ctx: commands.Context, match):
         teamOnePlayersStr = ""
-        for player in teams[0].GetPlayers():
+        for player in match.teamOne.GetPlayers():
             teamOnePlayersStr += f"<@{player.id}>\n"
 
         teamTwoPlayersStr = ""
-        for player in teams[1].GetPlayers():
+        for player in match.teamTwo.GetPlayers():
             teamTwoPlayersStr += f"<@{player.id}>\n"
 
         embed = discord.Embed(title="The queue has popped!")
@@ -103,17 +109,16 @@ class QueueManager():
     def CreateNewQueue(self):
         self.currentQueue = Queue()
 
-    def DeleteQueue(self):
-        self.currentQueue = Queue()
-
     def BackupQueue():
         raise NotImplementedError
+
+    
 
 class Match():
     def __init__(self, teamOne, teamTwo):
         self.teamOne = teamOne
         self.teamTwo = teamTwo
-        self.MatchNum = 1
+        self.MatchNum = 1 #Change this to be pulled from the DB
         self.reported = False
         self.winner = None
 

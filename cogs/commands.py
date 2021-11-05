@@ -34,7 +34,7 @@ class CommandsCog(commands.Cog):
             for player in queueManager.GetCurrentQueue().players:
                 playersStr += f"<@{player.id}>\n"
         
-        playersNeeded = 6 - queueManager.GetCurrentQueue().GetQueueSize()
+        playersNeeded = GAME_SIZE - queueManager.GetCurrentQueue().GetQueueSize()
         
         embed = discord.Embed(title="Current members in the queue", description=playersStr)
         embed.set_footer(text=f"{playersNeeded} more players needed to pop!")
