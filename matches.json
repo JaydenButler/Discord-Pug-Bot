@@ -4,93 +4,16 @@
       "teams": [
         {
           "teamNum": 1,
-          "playerData": { "players": [{ "id": 138797345776205825 }] }
+          "playerData": { "players": [{ "id": 737491973505548348 }] }
         },
         {
           "teamNum": 2,
-          "playerData": { "players": [{ "id": 737491973505548348 }] }
+          "playerData": { "players": [{ "id": 138797345776205825 }] }
         }
       ],
       "matchNum": 1,
       "reported": true,
       "winner": 2,
-      "reportedBy": 737491973505548348
-    },
-    {
-      "teams": [
-        {
-          "teamNum": 1,
-          "playerData": { "players": [{ "id": 138797345776205825 }] }
-        },
-        {
-          "teamNum": 2,
-          "playerData": { "players": [{ "id": 737491973505548348 }] }
-        }
-      ],
-      "matchNum": 2,
-      "reported": true,
-      "winner": 1,
-      "reportedBy": 737491973505548348
-    },
-    {
-      "teams": [
-        {
-          "teamNum": 1,
-          "playerData": { "players": [{ "id": 737491973505548348 }] }
-        },
-        {
-          "teamNum": 2,
-          "playerData": { "players": [{ "id": 138797345776205825 }] }
-        }
-      ],
-      "matchNum": 3,
-      "reported": false,
-      "winner": null
-    },
-    {
-      "teams": [
-        {
-          "teamNum": 1,
-          "playerData": { "players": [{ "id": 138797345776205825 }] }
-        },
-        {
-          "teamNum": 2,
-          "playerData": { "players": [{ "id": 737491973505548348 }] }
-        }
-      ],
-      "matchNum": 4,
-      "reported": false,
-      "winner": null
-    },
-    {
-      "teams": [
-        {
-          "teamNum": 1,
-          "playerData": { "players": [{ "id": 138797345776205825 }] }
-        },
-        {
-          "teamNum": 2,
-          "playerData": { "players": [{ "id": 737491973505548348 }] }
-        }
-      ],
-      "matchNum": 5,
-      "reported": false,
-      "winner": null
-    },
-    {
-      "teams": [
-        {
-          "teamNum": 1,
-          "playerData": { "players": [{ "id": 737491973505548348 }] }
-        },
-        {
-          "teamNum": 2,
-          "playerData": { "players": [{ "id": 138797345776205825 }] }
-        }
-      ],
-      "matchNum": 6,
-      "reported": true,
-      "winner": 1,
       "reportedBy": 737491973505548348
     }
   ]

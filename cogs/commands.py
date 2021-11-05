@@ -129,8 +129,11 @@ class CommandsCog(commands.Cog):
         reported = match["reported"]
         winner = match["winner"]
         reportedBy = match["reportedBy"]
-
+        
         description = f"Reported: {reported}\nWinning team: {winner}\nReported by: <@{reportedBy}>"
+        
+        if match["reportedBy"] == None:
+            description = f"Reported: {reported}\nWinning team: {winner}\nReported by: {reportedBy}"
 
         embed = discord.Embed(title=f"Found the following for __Match {matchNum}__", description=description)
 
@@ -149,5 +152,21 @@ class CommandsCog(commands.Cog):
 
         await ctx.send("", embed=embed) 
     
+    @commands.command()
+    async def swap(self, ctx, matchNum):
+        if matchNum.isnumeric() == False:
+            await ctx.reply("Please enter the match number is digit form, eg. **`500`**")
+            return
+        
+        successful = matchManager.SwapResult(int(matchNum))
+
+        if successful == True:
+            await ctx.reply(f"Scores for match **`{matchNum}`** swapped successfully")
+        else:
+            await ctx.reply("There was an error swaping the matches. Please make sure the match exists and has been reported before trying to swap.")
+
+        
+
+
 def setup(bot):
     bot.add_cog(CommandsCog(bot))
