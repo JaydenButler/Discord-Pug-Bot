@@ -102,21 +102,52 @@ class CommandsCog(commands.Cog):
         await ctx.send("", embed=embed)
 
     @commands.command()
-    async def report(self, ctx: commands.Context, match, result):
+    async def report(self, ctx: commands.Context, matchNum, result):
         result = result.lower()
-        if match.isnumeric() == False:
+        if matchNum.isnumeric() == False:
             await ctx.reply("Please enter the match number is digit form, eg. **`500`**")
             return
         if result != "w" and result != "l":
             await ctx.reply("Please report the result as either a W for a win, or L for a loss")
             return
 
-        reported = matchManager.ReportMatch(ctx.author.id, int(match), result)
+        reported = matchManager.ReportMatch(ctx.author.id, int(matchNum), result)
         
         if reported == True:
             await ctx.message.add_reaction("✅")     
         else:
-            await ctx.message.add_reaction("❌")   
+            await ctx.message.add_reaction("❌")  
+
+    @commands.command()
+    async def lookup(self, ctx: commands.Context, matchNum):
+        if matchNum.isnumeric() == False:
+            await ctx.reply("Please enter the match number is digit form, eg. **`500`**")
+            return
+
+        match = matchManager.GetMatch(int(matchNum))
+
+        reported = match["reported"]
+        winner = match["winner"]
+        reportedBy = match["reportedBy"]
+
+        description = f"Reported: {reported}\nWinning team: {winner}\nReported by: <@{reportedBy}>"
+
+        embed = discord.Embed(title=f"Found the following for __Match {matchNum}__", description=description)
+
+        teamOnePlayers = ""
+        for player in match["teams"][0]["playerData"]["players"]:
+            id = player["id"]
+            teamOnePlayers = teamOnePlayers + f"<@{id}>\n"
+
+        teamTwoPlayers = ""
+        for player in match["teams"][1]["playerData"]["players"]:
+            id = player["id"]
+            teamTwoPlayers = teamTwoPlayers + f"<@{id}>\n"
+
+        embed.add_field(name="Team 1", value=teamOnePlayers, inline=True)
+        embed.add_field(name="Team 2", value=teamTwoPlayers, inline=True)
+
+        await ctx.send("", embed=embed) 
     
 def setup(bot):
     bot.add_cog(CommandsCog(bot))

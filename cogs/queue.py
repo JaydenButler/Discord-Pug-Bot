@@ -24,6 +24,7 @@ class Queue():
         self.inVote = False
         self.votes = []
         self.votesNeeded = GAME_SIZE #In the future change this to half the queue size
+        self.reportedBy = None
     
     async def AddVote(self, ctx, vote):
         self.votes.append(vote)
@@ -75,7 +76,7 @@ class Queue():
 
         newMatch = Match(teamOne, teamTwo)
 
-        newMatch.SaveMatch()
+        newMatch = newMatch.SaveMatch()
 
         queueManager.CreateNewQueue()
 
@@ -101,7 +102,7 @@ class Queue():
         for player in match.teamTwo.GetPlayers():
             teamTwoPlayersStr += f"<@{player.id}>\n"
 
-        embed = discord.Embed(title="The queue has popped!")
+        embed = discord.Embed(title=f"Match {match.matchNum} is ready!")
         embed.add_field(name="Team 1", value=teamOnePlayersStr, inline=True)
         embed.add_field(name="Team 2", value=teamTwoPlayersStr, inline=True)
 
@@ -120,35 +121,40 @@ class QueueManager():
 class MatchManager():
     def ReportMatch(self, id, matchNum, result):
         matchSaved = False
-
-        with open("matches.json") as f:
-            savedMatches = json.load(f)
-            for match in savedMatches["matches"]:
-                if match["matchNum"] == matchNum:
-                    if match["reported"] is False:
-                        for team in match["teams"]:
-                            for player in team["playerData"]["players"]:
-                                if player["id"] == id:
-                                    if result == "w":
-                                        match["winner"] = team["teamNum"]
+        savedMatches = self.GetMatchJson()
+        
+        for match in savedMatches["matches"]:
+            if match["matchNum"] == matchNum:
+                if match["reported"] is False:
+                    for team in match["teams"]:
+                        for player in team["playerData"]["players"]:
+                            if player["id"] == id:
+                                if result == "w":
+                                    match["winner"] = team["teamNum"]
+                                    match["reported"] = True
+                                if result == "l":
+                                    if team["teamNum"] == 1:
+                                        match["winner"] = 2
                                         match["reported"] = True
-                                    if result == "l":
-                                        if team["teamNum"] == 1:
-                                            match["winner"] = 2
-                                            match["reported"] = True
-                                        elif team["teamNum"] == 2:
-                                            match["winner"] = 1
-                                            match["reported"] = True
-                                    with open('matches.json', 'w') as f:
-                                        json.dump(savedMatches, f)
-                                    matchSaved = True
+                                    elif team["teamNum"] == 2:
+                                        match["winner"] = 1
+                                        match["reported"] = True
+                                match["reportedBy"] = id
+                                with open('matches.json', 'w') as f:
+                                    json.dump(savedMatches, f)
+                                matchSaved = True
         
         return matchSaved
                                     
+    def GetMatch(self, matchNum):
+        savedMatches = self.GetMatchJson()
+        for match in savedMatches["matches"]:
+            if match["matchNum"] == matchNum:
+                return match
 
-    
-    def SaveMatch():
-        raise NotImplementedError
+    def GetMatchJson(self):
+         with open("matches.json") as f:
+            return json.load(f)
 
 
 class Match():
@@ -166,7 +172,7 @@ class Match():
     def SaveMatch(self):
         with open("matches.json") as f:
             savedMatches = json.load(f)
-            matchNum = len(savedMatches["matches"]) + 1
+            self.matchNum = len(savedMatches["matches"]) + 1
             newMatchJSON = {
                 "teams": [
                     {
@@ -178,13 +184,14 @@ class Match():
                          "playerData": self.teamTwo.dump()
                     }
                 ],
-                "matchNum": matchNum,
+                "matchNum": self.matchNum,
                 "reported": False,
                 "winner": None
             }
             savedMatches["matches"].append(newMatchJSON)
             with open('matches.json', 'w') as f:
                 json.dump(savedMatches, f)
+            return self
 
 class Team():
     def __init__(self):
