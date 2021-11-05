@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from discord.ext.commands.cog import Cog
-from cogs.queue import queueManager, VoteTypes, Player, Vote, GAME_SIZE
+from cogs.queue import queueManager, VoteTypes, Player, Vote, GAME_SIZE, matchManager
 
 class CommandsCog(commands.Cog):
     def __init__(self, bot):
@@ -100,6 +100,23 @@ class CommandsCog(commands.Cog):
         embed = discord.Embed(title="Current votes", description=votes)
         embed.set_footer(text=f"{voteCount}/{queueManager.GetCurrentQueue().GetQueueSize()} people have voted")
         await ctx.send("", embed=embed)
+
+    @commands.command()
+    async def report(self, ctx: commands.Context, match, result):
+        result = result.lower()
+        if match.isnumeric() == False:
+            await ctx.reply("Please enter the match number is digit form, eg. **`500`**")
+            return
+        if result != "w" and result != "l":
+            await ctx.reply("Please report the result as either a W for a win, or L for a loss")
+            return
+
+        reported = matchManager.ReportMatch(ctx.author.id, int(match), result)
+        
+        if reported == True:
+            await ctx.message.add_reaction("✅")     
+        else:
+            await ctx.message.add_reaction("❌")   
     
 def setup(bot):
     bot.add_cog(CommandsCog(bot))

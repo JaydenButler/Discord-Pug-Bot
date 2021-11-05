@@ -5,7 +5,8 @@ from discord.ext import commands
 from enum import Enum
 
 global queueManager
-GAME_SIZE = 3
+global matchManager
+GAME_SIZE = 2
 
 class Player():
     def __init__(self, discordID):
@@ -116,16 +117,45 @@ class QueueManager():
     def CreateNewQueue(self):
         self.currentQueue = Queue()
 
-    def BackupQueue():
-        raise NotImplementedError
+class MatchManager():
+    def ReportMatch(self, id, matchNum, result):
+        matchSaved = False
+
+        with open("matches.json") as f:
+            savedMatches = json.load(f)
+            for match in savedMatches["matches"]:
+                if match["matchNum"] == matchNum:
+                    if match["reported"] is False:
+                        for team in match["teams"]:
+                            for player in team["playerData"]["players"]:
+                                if player["id"] == id:
+                                    if result == "w":
+                                        match["winner"] = team["teamNum"]
+                                        match["reported"] = True
+                                    if result == "l":
+                                        if team["teamNum"] == 1:
+                                            match["winner"] = 2
+                                            match["reported"] = True
+                                        elif team["teamNum"] == 2:
+                                            match["winner"] = 1
+                                            match["reported"] = True
+                                    with open('matches.json', 'w') as f:
+                                        json.dump(savedMatches, f)
+                                    matchSaved = True
+        
+        return matchSaved
+                                    
 
     
+    def SaveMatch():
+        raise NotImplementedError
+
 
 class Match():
     def __init__(self, teamOne, teamTwo):
         self.teamOne = teamOne
         self.teamTwo = teamTwo
-        self.MatchNum = 1 #Change this to be pulled from the DB
+        self.matchNum = 69420
         self.reported = False
         self.winner = None
 
@@ -136,16 +166,19 @@ class Match():
     def SaveMatch(self):
         with open("matches.json") as f:
             savedMatches = json.load(f)
+            matchNum = len(savedMatches["matches"]) + 1
             newMatchJSON = {
                 "teams": [
                     {
+                        "teamNum": 1, 
                         "playerData": self.teamOne.dump()
                     },
                     {
+                        "teamNum": 2,
                          "playerData": self.teamTwo.dump()
                     }
                 ],
-                "matchNum": 1,
+                "matchNum": matchNum,
                 "reported": False,
                 "winner": None
             }
@@ -182,3 +215,4 @@ class VoteTypes(Enum):
     CAPTAINS = "c"
 
 queueManager = QueueManager()
+matchManager = MatchManager()

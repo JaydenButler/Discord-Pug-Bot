@@ -3,34 +3,47 @@
     {
       "teams": [
         {
-          "playerData": {
-            "players": [
-              { "id": 737491973505548348 },
-              { "id": 138797345776205825 }
-            ]
-          }
+          "teamNum": 1,
+          "playerData": { "players": [{ "id": 138797345776205825 }] }
         },
-        { "playerData": { "players": [{ "id": 860749298391580713 }] } }
+        {
+          "teamNum": 2,
+          "playerData": { "players": [{ "id": 737491973505548348 }] }
+        }
       ],
       "matchNum": 1,
-      "reported": false,
-      "winner": null
+      "reported": true,
+      "winner": 2
     },
     {
       "teams": [
         {
-          "playerData": {
-            "players": [
-              { "id": 737491973505548348 },
-              { "id": 138797345776205825 }
-            ]
-          }
+          "teamNum": 1,
+          "playerData": { "players": [{ "id": 737491973505548348 }] }
         },
-        { "playerData": { "players": [{ "id": 860749298391580713 }] } }
+        {
+          "teamNum": 2,
+          "playerData": { "players": [{ "id": 138797345776205825 }] }
+        }
       ],
-      "matchNum": 1,
-      "reported": false,
-      "winner": null
+      "matchNum": 2,
+      "reported": true,
+      "winner": 1
+    },
+    {
+      "teams": [
+        {
+          "teamNum": 1,
+          "playerData": { "players": [{ "id": 737491973505548348 }] }
+        },
+        {
+          "teamNum": 2,
+          "playerData": { "players": [{ "id": 138797345776205825 }] }
+        }
+      ],
+      "matchNum": 3,
+      "reported": true,
+      "winner": 2
     }
   ]
 }
