@@ -2,6 +2,7 @@ import asyncio
 import random
 import discord
 from discord.ext import commands
+from enum import Enum
 
 global queueManager
 GAME_SIZE = 2
@@ -13,8 +14,16 @@ class Player():
 class Queue():
     def __init__(self):
         self.players = []
+        self.inVote = False
+        self.votes = []
+        self.votesNeeded = GAME_SIZE #In the future change this to half the queue size
     
-    async def AddPlayer(self, ctx, player):
+    async def AddVote(self, ctx, vote):
+        self.votes.append(vote)
+        if len(self.votes) == self.votesNeeded:
+            await self.DoRandomTeamSelection(ctx)
+    
+    async def AddPlayer(self, player):
         self.players.append(player)
 
     def RemovePlayer(self, player):
@@ -28,9 +37,9 @@ class Queue():
     
     async def CheckQueueFull(self, ctx):
         if(self.GetQueueSize() == GAME_SIZE):
-            await queueManager.GetCurrentQueue().DoQueuePop(ctx=ctx)
+            await queueManager.GetCurrentQueue().PostQueueTypeVote(ctx)
 
-    async def DoQueuePop(self, ctx: commands.Context):
+    async def DoRandomTeamSelection(self, ctx: commands.Context):
         print("A queue has popped!")
 
         playersToAdd = self.GetQueueSize() - 1
@@ -59,6 +68,16 @@ class Queue():
         await self.PostQueue(ctx, [teamOne, teamTwo])
         
 
+    async def PostQueueTypeVote(self, ctx):
+        self.inVote = True
+        print("Posting the queue type vote")
+        embed = discord.Embed(title="Please vote on the queue type below!")
+        embed.add_field(name="Balanced", value="```!b```", inline=True)
+        embed.add_field(name="Captains", value="```!c```", inline=True)
+        embed.add_field(name="Random", value="```!r```", inline=True)
+        await ctx.send("", embed=embed)
+
+
     async def PostQueue(self, ctx: commands.Context, teams):
         teamOnePlayersStr = ""
         for player in teams[0].GetPlayers():
@@ -72,7 +91,7 @@ class Queue():
         embed.add_field(name="Team 1", value=teamOnePlayersStr, inline=True)
         embed.add_field(name="Team 2", value=teamTwoPlayersStr, inline=True)
 
-        await ctx.reply("", embed=embed)
+        await ctx.send("", embed=embed)
 
 class QueueManager():
     def __init__(self):
@@ -101,8 +120,6 @@ class Match():
     def ReportWinner(self, winningTeam):
         self.reported = True
         self.winner = winningTeam
-    
-    
 
 class Team():
     def __init__(self):
@@ -113,5 +130,15 @@ class Team():
 
     def GetPlayers(self):
         return self.players
+
+class Vote():
+    def __init__(self, player, vote):
+        self.player = player
+        self.vote = vote
+
+class VoteTypes(Enum):
+    RANDOM = "r"
+    BALANCED = "b"
+    CAPTAINS = "c"
 
 queueManager = QueueManager()

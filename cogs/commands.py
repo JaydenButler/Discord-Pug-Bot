@@ -1,9 +1,7 @@
 import discord
 from discord.ext import commands
 from discord.ext.commands.cog import Cog
-from cogs.queue import queueManager
-
-from cogs.queue import Player
+from cogs.queue import queueManager, VoteTypes, Player, Vote, GAME_SIZE
 
 class CommandsCog(commands.Cog):
     def __init__(self, bot):
@@ -13,13 +11,13 @@ class CommandsCog(commands.Cog):
     async def q(self, ctx: commands.Context):
         newPlayer = Player(ctx.author.id)
 
-        await queueManager.GetCurrentQueue().AddPlayer(ctx, newPlayer)
+        await queueManager.GetCurrentQueue().AddPlayer(newPlayer)
 
         currentQueueSize = queueManager.GetCurrentQueue().GetQueueSize()
 
-        playersNeeded = 6 - currentQueueSize
+        playersNeeded = GAME_SIZE - currentQueueSize
 
-        embed = discord.Embed(title=f"Someone has joined the queue ({currentQueueSize}/6)", description=f"{ctx.author.mention} has joined the queue")
+        embed = discord.Embed(title=f"Someone has joined the queue ({currentQueueSize}/{GAME_SIZE})", description=f"{ctx.author.mention} has joined the queue")
         embed.set_footer(text=f"{playersNeeded} more players needed to pop!")
 
         await ctx.reply("", embed=embed)
@@ -74,6 +72,34 @@ class CommandsCog(commands.Cog):
             await ctx.send(f'**`ERROR:`** {type(e).__name__} - {e}')
         else:
             await ctx.send('**`SUCCESS`**')
+    
+    @commands.command()
+    async def r(self, ctx: commands.Context):
+        playerVoted = False
+        currentQueue = queueManager.GetCurrentQueue()
+        for player in currentQueue.players:
+            for vote in currentQueue.votes:
+                if vote.player == player:
+                    playerVoted = True
+                else:
+                    playerVoted = False
+            if player.id == ctx.author.id and currentQueue.inVote is True and playerVoted is False:
+                newVote = Vote(player, VoteTypes.RANDOM)
+                await ctx.message.add_reaction("✅")  
+                await currentQueue.AddVote(ctx, newVote)  
+
+    @commands.command()
+    async def votes(self, ctx):
+        votes = ""
+
+        voteCount = len(queueManager.GetCurrentQueue().votes)
+
+        for vote in queueManager.GetCurrentQueue().votes:
+            votes = votes + f"<@{vote.player.id}> voted for **`{vote.vote.name}`**\n"
+
+        embed = discord.Embed(title="Current votes", description=votes)
+        embed.set_footer(text=f"{voteCount}/{queueManager.GetCurrentQueue().GetQueueSize()} people have voted")
+        await ctx.send("", embed=embed)
     
 def setup(bot):
     bot.add_cog(CommandsCog(bot))
