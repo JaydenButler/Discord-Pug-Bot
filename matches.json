@@ -1,0 +1,36 @@
+{
+  "matches": [
+    {
+      "teams": [
+        {
+          "playerData": {
+            "players": [
+              { "id": 737491973505548348 },
+              { "id": 138797345776205825 }
+            ]
+          }
+        },
+        { "playerData": { "players": [{ "id": 860749298391580713 }] } }
+      ],
+      "matchNum": 1,
+      "reported": false,
+      "winner": null
+    },
+    {
+      "teams": [
+        {
+          "playerData": {
+            "players": [
+              { "id": 737491973505548348 },
+              { "id": 138797345776205825 }
+            ]
+          }
+        },
+        { "playerData": { "players": [{ "id": 860749298391580713 }] } }
+      ],
+      "matchNum": 1,
+      "reported": false,
+      "winner": null
+    }
+  ]
+}

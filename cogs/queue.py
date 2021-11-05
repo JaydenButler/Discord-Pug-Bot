@@ -1,15 +1,21 @@
-import asyncio
+import json
 import random
 import discord
 from discord.ext import commands
 from enum import Enum
 
 global queueManager
-GAME_SIZE = 2
+GAME_SIZE = 3
 
 class Player():
     def __init__(self, discordID):
         self.id = discordID
+
+    def dump(self):
+        data = {
+            "id": self.id
+        }
+        return data
 
 class Queue():
     def __init__(self):
@@ -66,8 +72,9 @@ class Queue():
 
             playersToAdd -= 1
 
-
         newMatch = Match(teamOne, teamTwo)
+
+        newMatch.SaveMatch()
 
         queueManager.CreateNewQueue()
 
@@ -126,6 +133,26 @@ class Match():
         self.reported = True
         self.winner = winningTeam
 
+    def SaveMatch(self):
+        with open("matches.json") as f:
+            savedMatches = json.load(f)
+            newMatchJSON = {
+                "teams": [
+                    {
+                        "playerData": self.teamOne.dump()
+                    },
+                    {
+                         "playerData": self.teamTwo.dump()
+                    }
+                ],
+                "matchNum": 1,
+                "reported": False,
+                "winner": None
+            }
+            savedMatches["matches"].append(newMatchJSON)
+            with open('matches.json', 'w') as f:
+                json.dump(savedMatches, f)
+
 class Team():
     def __init__(self):
         self.players = []
@@ -135,6 +162,14 @@ class Team():
 
     def GetPlayers(self):
         return self.players
+
+    def dump(self):
+        data = {
+            "players": []
+        }
+        for player in self.GetPlayers():
+            data["players"].append(player.dump())
+        return data
 
 class Vote():
     def __init__(self, player, vote):
