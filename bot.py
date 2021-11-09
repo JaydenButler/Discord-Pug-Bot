@@ -1,9 +1,12 @@
 import logging
+import os
 import discord
 from discord.ext import commands
-from dotenv import dotenv_values
+from dotenv import load_dotenv
 
-config = dotenv_values(".env")
+global BOTCONFIG
+
+load_dotenv(".env")
 
 intents = discord.Intents.default()
 intents.members = True
@@ -29,4 +32,4 @@ handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-bot.run(config["BOT_TOKEN"], reconnect=True)
+bot.run(os.environ.get("BOT_TOKEN"), reconnect=True)

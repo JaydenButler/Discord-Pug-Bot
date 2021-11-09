@@ -3,7 +3,7 @@ import random
 import discord
 from discord.ext import commands
 from enum import Enum
-from match import Match
+from Managers.MatchManager import Match
 
 global queueManager
 GAME_SIZE = 2

@@ -1,11 +1,23 @@
 import discord
 from discord.ext import commands
 from discord.ext.commands.cog import Cog
-from cogs.queue import queueManager, VoteTypes, Player, Vote, GAME_SIZE, matchManager
+from Managers.QueueManager import queueManager, VoteTypes, Player, Vote, GAME_SIZE
+from Managers.MatchManager import matchManager
+from Managers.DatabaseManager import update_record, insert_record, find_record
 
 class CommandsCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    @commands.command()
+    async def setup(self, ctx: commands.Context):
+        data = {
+            "_id": ctx.guild.id,
+            "players": [],
+            "matches": []
+        }
+        insert_record(data)
+        await ctx.reply("Complete.")
 
     @commands.command()
     async def q(self, ctx: commands.Context):
