@@ -21,6 +21,10 @@ class CommandsCog(commands.Cog):
 
     @commands.command()
     async def q(self, ctx: commands.Context):
+        for player in queueManager.GetCurrentQueue().players:
+            if player.id == ctx.author.id:
+                return
+
         newPlayer = Player(ctx.author.id)
 
         await queueManager.GetCurrentQueue().AddPlayer(newPlayer)
@@ -176,6 +180,23 @@ class CommandsCog(commands.Cog):
             await ctx.reply(f"Scores for match **`{matchNum}`** swapped successfully")
         else:
             await ctx.reply("There was an error swaping the matches. Please make sure the match exists and has been reported before trying to swap.")
+    
+    @commands.command()
+    async def leave(self, ctx):
+        for player in queueManager.GetCurrentQueue().players:
+            if player.id == ctx.author.id and queueManager.GetCurrentQueue().inVote == False:
+                queueManager.GetCurrentQueue().players.remove(player)
+
+                currentQueueSize = queueManager.GetCurrentQueue().GetQueueSize()
+
+                playersNeeded = GAME_SIZE - currentQueueSize
+
+                embed = discord.Embed(title=f"Someone has left the queue ({currentQueueSize}/{GAME_SIZE})", description=f"{ctx.author.mention} has left the queue")
+                embed.set_footer(text=f"{playersNeeded} more players needed to pop!")
+
+                await ctx.reply("", embed=embed)
+        
+
 
         
 
