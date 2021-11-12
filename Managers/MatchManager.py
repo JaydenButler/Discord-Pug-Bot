@@ -51,6 +51,7 @@ class MatchManager():
 
         return matchSaved
         
+    #TODO: Change GetMatchInfo to GetMatchesInfo and create a GetMatchInfo method that does what is says
     def GetMatchInfo(self, guildId):
         serverInfo = find_record(guildId)
         return serverInfo["matches"]

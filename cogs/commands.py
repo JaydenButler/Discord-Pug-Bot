@@ -76,6 +76,7 @@ class CommandsCog(commands.Cog):
         
         await ctx.reply("", embed=embed)
 
+    #!Delete
     @commands.command()
     async def force_pop(self, ctx):
         if queueManager.GetCurrentQueue().GetQueueSize() > 1:
@@ -159,33 +160,42 @@ class CommandsCog(commands.Cog):
             await ctx.reply("Please enter the match number is digit form, eg. **`500`**")
             return
 
-        match = matchManager.GetMatch(int(matchNum))
+        matches = matchManager.GetMatchInfo(ctx.guild.id)
 
-        reported = match["reported"]
-        winner = match["winner"]
-        reportedBy = match["reportedBy"]
+        currentMatch = None
+
+        for match in matches:
+            if match["matchNum"] == int(matchNum):
+                currentMatch = match
         
-        description = f"Reported: {reported}\nWinning team: {winner}\nReported by: <@{reportedBy}>"
-        
-        if match["reportedBy"] == None:
-            description = f"Reported: {reported}\nWinning team: {winner}\nReported by: {reportedBy}"
+        if currentMatch != None:
+            reported = currentMatch["reported"]
+            winner = currentMatch["winner"]
+            reportedBy = currentMatch["reportedBy"]
+            
+            description = f"Reported: {reported}\nWinning team: {winner}\nReported by: <@{reportedBy}>"
+            
+            if currentMatch["reportedBy"] == None:
+                description = f"Reported: {reported}\nWinning team: {winner}\nReported by: {reportedBy}"
 
-        embed = discord.Embed(title=f"Found the following for __Match {matchNum}__", description=description)
+            embed = discord.Embed(title=f"Found the following for __Match {matchNum}__", description=description)
 
-        teamOnePlayers = ""
-        for player in match["teams"][0]["playerData"]["players"]:
-            id = player["id"]
-            teamOnePlayers = teamOnePlayers + f"<@{id}>\n"
+            teamOnePlayers = ""
+            for player in currentMatch["teams"][0]["playerData"]["players"]:
+                id = player["id"]
+                teamOnePlayers = teamOnePlayers + f"<@{id}>\n"
 
-        teamTwoPlayers = ""
-        for player in match["teams"][1]["playerData"]["players"]:
-            id = player["id"]
-            teamTwoPlayers = teamTwoPlayers + f"<@{id}>\n"
+            teamTwoPlayers = ""
+            for player in currentMatch["teams"][1]["playerData"]["players"]:
+                id = player["id"]
+                teamTwoPlayers = teamTwoPlayers + f"<@{id}>\n"
 
-        embed.add_field(name="Team 1", value=teamOnePlayers, inline=True)
-        embed.add_field(name="Team 2", value=teamTwoPlayers, inline=True)
+            embed.add_field(name="Team 1", value=teamOnePlayers, inline=True)
+            embed.add_field(name="Team 2", value=teamTwoPlayers, inline=True)
 
-        await ctx.send("", embed=embed) 
+            await ctx.send("", embed=embed)
+        else:
+            await ctx.reply(f"Could not find match **`{matchNum}`**")
     
     @commands.command()
     async def swap(self, ctx, matchNum):
