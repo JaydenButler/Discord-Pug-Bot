@@ -39,7 +39,7 @@ class CommandsCog(commands.Cog):
             newPlayer = {
                 "id": ctx.author.id,
                 "rank": None,
-                "mmr": None,
+                "mmr": 1500,
             }
             update_record(ctx.guild.id, "$push", "players", newPlayer)
                 
@@ -224,14 +224,6 @@ class CommandsCog(commands.Cog):
                 embed.set_footer(text=f"{playersNeeded} more players needed to pop!")
 
                 await ctx.reply("", embed=embed)
-        
-    @commands.command()
-    async def test(self, ctx):
-        rec = find_record(ctx.guild.id)
-        await ctx.send(f"{rec}")
-
-        
-
 
 def setup(bot):
     bot.add_cog(CommandsCog(bot))
