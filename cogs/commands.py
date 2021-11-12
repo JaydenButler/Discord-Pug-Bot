@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from discord.ext.commands.cog import Cog
+from pymongo.message import update
 from Managers.QueueManager import queueManager, VoteTypes, Player, Vote, GAME_SIZE
 from Managers.MatchManager import matchManager
 from Managers.DatabaseManager import update_record, insert_record, find_record
@@ -9,6 +10,7 @@ class CommandsCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    #TODO: If already exists, delete and re create
     @commands.command()
     async def setup(self, ctx: commands.Context):
         data = {
@@ -19,11 +21,28 @@ class CommandsCog(commands.Cog):
         insert_record(data)
         await ctx.reply("Complete.")
 
+    #TODO: Set their mmr based on their rank
     @commands.command()
     async def q(self, ctx: commands.Context):
         for player in queueManager.GetCurrentQueue().players:
             if player.id == ctx.author.id:
                 return
+
+        server = find_record(ctx.guild.id)
+
+        inDatabase = False
+        for player in server["players"]:
+            if player["id"] == ctx.author.id:  
+                inDatabase = True
+        
+        if inDatabase == False:
+            newPlayer = {
+                "id": ctx.author.id,
+                "rank": None,
+                "mmr": None,
+            }
+            update_record(ctx.guild.id, "$push", "players", newPlayer)
+                
 
         newPlayer = Player(ctx.author.id)
 
@@ -127,7 +146,7 @@ class CommandsCog(commands.Cog):
             await ctx.reply("Please report the result as either a W for a win, or L for a loss")
             return
 
-        reported = matchManager.ReportMatch(ctx.author.id, int(matchNum), result)
+        reported = matchManager.ReportMatch(ctx.guild.id, ctx.author.id, int(matchNum), result)
         
         if reported == True:
             await ctx.message.add_reaction("✅")     
@@ -174,7 +193,7 @@ class CommandsCog(commands.Cog):
             await ctx.reply("Please enter the match number is digit form, eg. **`500`**")
             return
         
-        successful = matchManager.SwapResult(int(matchNum))
+        successful = matchManager.SwapResult(ctx.guild.id, int(matchNum))
 
         if successful == True:
             await ctx.reply(f"Scores for match **`{matchNum}`** swapped successfully")
@@ -196,7 +215,10 @@ class CommandsCog(commands.Cog):
 
                 await ctx.reply("", embed=embed)
         
-
+    @commands.command()
+    async def test(self, ctx):
+        rec = find_record(ctx.guild.id)
+        await ctx.send(f"{rec}")
 
         
 

@@ -1,4 +1,3 @@
-import json
 import random
 import discord
 from discord.ext import commands
@@ -93,7 +92,7 @@ class Queue():
 
         newMatch = Match(teamOne, teamTwo)
 
-        newMatch = newMatch.SaveMatch()
+        newMatch = newMatch.SaveMatch(ctx.guild.id)
 
         queueManager.CreateNewQueue()
 
