@@ -86,11 +86,12 @@ print(f"Team 1 total elo: {team1['total']}")
 
 playerExpectedScoresTeam2 = get_expected_score_per_player(team2, team1)
 
+n = 1
 print(f"\n===== Team 2 - {team2['total'] } (LOSER) =====")
-i = 1
 for score in playerExpectedScoresTeam2:
-    eloChange = round(get_win_elo_change(score), 1)
-    print(f"Player {i} original: {team2['players'][i - 1]['mmr']}")
-    print(f"Player {i} gained: +{eloChange}\n")
+    eloChange = round(get_loss_elo_change(score), 1)
+    print(f"Player {i} original: {team2['players'][n - 1]['mmr']}")
+    print(f"Player {i} gained: -{eloChange}\n")
     i = i + 1
+    n = n + 1
 print("\n\n")
