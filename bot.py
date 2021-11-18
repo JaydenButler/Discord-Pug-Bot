@@ -13,7 +13,7 @@ intents.members = True
 intents.messages = True
 intents.guild_messages = True
 
-initial_extensions = ["cogs.commands"]
+initial_extensions = ["cogs.commands", "cogs.admin_commands"]
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 

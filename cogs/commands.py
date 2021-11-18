@@ -11,17 +11,6 @@ class CommandsCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    #TODO: If already exists, delete and re create
-    @commands.command()
-    async def setup(self, ctx: commands.Context):
-        data = {
-            "_id": ctx.guild.id,
-            "players": [],
-            "matches": []
-        }
-        insert_record(data)
-        await ctx.reply("Complete.")
-
     #TODO: Set their mmr based on their rank
     @commands.command()
     async def q(self, ctx: commands.Context):
@@ -76,39 +65,6 @@ class CommandsCog(commands.Cog):
         embed.set_footer(text=f"{playersNeeded} more players needed to pop!")
         
         await ctx.reply("", embed=embed)
-
-    #!Delete
-    @commands.command()
-    async def force_pop(self, ctx):
-        if queueManager.GetCurrentQueue().GetQueueSize() > 1:
-
-            teams = queueManager.GetCurrentQueue().DoQueuePop()
-            
-            teamOnePlayersStr = ""
-            for player in teams[0].GetPlayers():
-                teamOnePlayersStr += f"<@{player.id}>\n"
-
-            teamTwoPlayersStr = ""
-            for player in teams[1].GetPlayers():
-                teamTwoPlayersStr += f"<@{player.id}>\n"
-
-            embed = discord.Embed(title="The queue has popped!")
-            embed.add_field(name="Team 1", value=teamOnePlayersStr, inline=True)
-            embed.add_field(name="Team 2", value=teamTwoPlayersStr, inline=True)
-
-            await ctx.reply("", embed=embed)
-        else:
-            await ctx.reply("Queue is too small to pop... Get some friends to play with!")
-
-    @commands.command()
-    async def reload(self, ctx: commands.Context, *, cog: str):
-        try:
-            self.bot.unload_extension("cogs." + cog)
-            self.bot.load_extension("cogs." + cog)
-        except Exception as e:
-            await ctx.send(f'**`ERROR:`** {type(e).__name__} - {e}')
-        else:
-            await ctx.send('**`SUCCESS`**')
     
     @commands.command()
     async def r(self, ctx: commands.Context):
@@ -151,62 +107,6 @@ class CommandsCog(commands.Cog):
         reported = matchManager.ReportMatch(ctx.guild.id, ctx.author.id, int(matchNum), result)
         
         if reported == True:
-            await ctx.message.add_reaction("✅")     
-        else:
-            await ctx.message.add_reaction("❌")  
-
-    @commands.command()
-    async def lookup(self, ctx: commands.Context, matchNum):
-        if matchNum.isnumeric() == False:
-            await ctx.reply("Please enter the match number is digit form, eg. **`500`**")
-            return
-
-        matches = matchManager.GetMatchInfo(ctx.guild.id)
-
-        currentMatch = None
-
-        for match in matches:
-            if match["matchNum"] == int(matchNum):
-                currentMatch = match
-        
-        if currentMatch != None:
-            reported = currentMatch["reported"]
-            winner = currentMatch["winner"]
-            reportedBy = currentMatch["reportedBy"]
-            
-            description = f"Reported: {reported}\nWinning team: {winner}\nReported by: <@{reportedBy}>"
-            
-            if currentMatch["reportedBy"] == None:
-                description = f"Reported: {reported}\nWinning team: {winner}\nReported by: {reportedBy}"
-
-            embed = discord.Embed(title=f"Found the following for __Match {matchNum}__", description=description)
-
-            teamOnePlayers = ""
-            for player in currentMatch["teams"][0]["playerData"]["players"]:
-                id = player["id"]
-                teamOnePlayers = teamOnePlayers + f"<@{id}>\n"
-
-            teamTwoPlayers = ""
-            for player in currentMatch["teams"][1]["playerData"]["players"]:
-                id = player["id"]
-                teamTwoPlayers = teamTwoPlayers + f"<@{id}>\n"
-
-            embed.add_field(name="Team 1", value=teamOnePlayers, inline=True)
-            embed.add_field(name="Team 2", value=teamTwoPlayers, inline=True)
-
-            await ctx.send("", embed=embed)
-        else:
-            await ctx.reply(f"Could not find match **`{matchNum}`**")
-    
-    @commands.command()
-    async def swap(self, ctx, matchNum):
-        if matchNum.isnumeric() == False:
-            await ctx.reply("Please enter the match number is digit form, eg. **`500`**")
-            return
-        
-        successful = matchManager.SwapResult(ctx.guild.id, int(matchNum))
-
-        if successful == True:
             await ctx.message.add_reaction("✅")     
         else:
             await ctx.message.add_reaction("❌")  
