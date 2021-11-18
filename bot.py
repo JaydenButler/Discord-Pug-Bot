@@ -33,3 +33,6 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 bot.run(os.environ.get("BOT_TOKEN"), reconnect=True)
+
+#!TODO:
+# Make the team mmr avg in EloManager

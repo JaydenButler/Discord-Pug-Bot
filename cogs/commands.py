@@ -2,9 +2,10 @@ import discord
 from discord.ext import commands
 from discord.ext.commands.cog import Cog
 from pymongo.message import update
-from Managers.QueueManager import queueManager, VoteTypes, Player, Vote, GAME_SIZE
+from Managers.QueueManager import queueManager, VoteTypes, Vote, GAME_SIZE
 from Managers.MatchManager import matchManager
 from Managers.DatabaseManager import update_record, insert_record, find_record
+from Managers.PlayerManager import Player
 
 class CommandsCog(commands.Cog):
     def __init__(self, bot):
@@ -206,9 +207,9 @@ class CommandsCog(commands.Cog):
         successful = matchManager.SwapResult(ctx.guild.id, int(matchNum))
 
         if successful == True:
-            await ctx.reply(f"Scores for match **`{matchNum}`** swapped successfully")
+            await ctx.message.add_reaction("✅")     
         else:
-            await ctx.reply("There was an error swaping the matches. Please make sure the match exists and has been reported before trying to swap.")
+            await ctx.message.add_reaction("❌")  
     
     @commands.command()
     async def leave(self, ctx):

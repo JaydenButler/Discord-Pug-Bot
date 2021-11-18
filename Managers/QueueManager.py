@@ -9,26 +9,6 @@ from Managers.EloManager import get_expected_score
 global queueManager
 GAME_SIZE = 2
 
-class Player():
-    def __init__(self, discordID, guildID):
-        self.id = discordID
-        self.mmr = 0,
-        self.rank = None
-        server = find_record(guildID)
-        for player in server["players"]:
-            if player["id"] == discordID:
-                self.mmr = player["mmr"]
-                self.rank = player["rank"]
-
-
-    def dump(self):
-        data = {
-            "id": self.id,
-            "mmr": self.mmr,
-            "rank": self.rank
-        }
-        return data
-
 class Team():
     def __init__(self):
         self.players = []
