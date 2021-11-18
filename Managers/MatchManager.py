@@ -1,4 +1,6 @@
 from Managers.DatabaseManager import update_record, find_record, report_existing_match
+from Managers.EloManager import get_expected_score, get_expected_score_per_player, get_loss_elo_change, get_win_elo_change
+from Managers.PlayerManager import update_player_elo
 global matchManager
 
 class MatchManager():
@@ -23,6 +25,44 @@ class MatchManager():
                                         match["winner"] = 1
                                         match["reported"] = True
                                 match["reportedBy"] = playerId
+
+                                #!MAKE THIS AVG
+                                teamOneMMR = 0
+                                for player in match["teams"][0]["playerData"]["players"]:
+                                    teamOneMMR = teamOneMMR + int(player["mmr"])
+
+                                #!MAKE THIS AVG
+                                teamTwoMMR = 0
+                                for player in match["teams"][1]["playerData"]["players"]:
+                                    teamTwoMMR = teamTwoMMR + int(player["mmr"])
+                                
+                                if match["winner"] == 1:
+                                    #For the winning team
+                                    for player in match["teams"][0]["playerData"]["players"]:
+                                        playerWinChance = get_expected_score_per_player(player["mmr"], teamTwoMMR)
+                                        amount = get_win_elo_change(playerWinChance)
+                                        update_player_elo(guildId, player["id"], amount)
+                                    
+                                    #For the losing team
+                                    for player in match["teams"][1]["playerData"]["players"]:
+                                        playerWinChance = get_expected_score_per_player(player["mmr"], teamOneMMR)
+                                        amount = get_loss_elo_change(playerWinChance)
+                                        update_player_elo(guildId, player["id"], amount)
+
+                                elif match["winner"] == 2:
+                                    #For the winning team
+                                    for player in match["teams"][0]["playerData"]["players"]:
+                                        playerWinChance = get_expected_score_per_player(player["mmr"], teamOneMMR)
+                                        amount = get_loss_elo_change(playerWinChance)
+                                        update_player_elo(guildId, player["id"], amount)
+                                    
+                                    #For the losing team
+                                    for player in match["teams"][1]["playerData"]["players"]:
+                                        playerWinChance = get_expected_score_per_player(player["mmr"], teamTwoMMR)
+                                        amount = get_win_elo_change(playerWinChance)
+                                        update_player_elo(guildId, player["id"], amount)
+
+
                                 report_existing_match(guildId, match)
                                 matchSaved = True
         

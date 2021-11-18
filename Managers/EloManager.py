@@ -26,19 +26,17 @@ def get_expected_score(team1, team2):
 def get_win_elo_change(expected_score):
     return K * (1 - expected_score)
 
+#Loss isnt working porperly, need to actually calc the loss
 def get_loss_elo_change(expected_score):
-    return K * expected_score
+    return -(K * expected_score)
 
-def get_expected_score_per_player(team1, team2):
-    team2avg = int(team2["total"]) / 3
-    playerGains = []
+def get_expected_score_per_player(player, otherTeam):
+    otherTeamAvg = otherTeam
 
-    for player in team1["players"]:
-        ratingDiff = team2avg - player["mmr"]
-        denominator = 1 + 10 ** (ratingDiff / 400)
-        expectedScore =  1 / denominator
-        playerGains.append(expectedScore)
-    return playerGains
+    ratingDiff = otherTeamAvg - player
+    denominator = 1 + 10 ** (ratingDiff / 400)
+    expectedScore =  1 / denominator
+    return expectedScore
 
 
 # team1 = {

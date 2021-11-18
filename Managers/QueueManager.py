@@ -23,7 +23,9 @@ class Player():
 
     def dump(self):
         data = {
-            "id": self.id
+            "id": self.id,
+            "mmr": self.mmr,
+            "rank": self.rank
         }
         return data
 
