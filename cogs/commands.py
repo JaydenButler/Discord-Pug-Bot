@@ -44,7 +44,7 @@ class CommandsCog(commands.Cog):
             update_record(ctx.guild.id, "$push", "players", newPlayer)
                 
 
-        newPlayer = Player(ctx.author.id)
+        newPlayer = Player(ctx.author.id, ctx.guild.id)
 
         await queueManager.GetCurrentQueue().AddPlayer(newPlayer)
 

@@ -2,14 +2,24 @@ import random
 import discord
 from discord.ext import commands
 from enum import Enum
+from Managers.DatabaseManager import find_record
 from Managers.MatchManager import Match
+from Managers.EloManager import get_expected_score
 
 global queueManager
 GAME_SIZE = 2
 
 class Player():
-    def __init__(self, discordID):
+    def __init__(self, discordID, guildID):
         self.id = discordID
+        self.mmr = 0,
+        self.rank = None
+        server = find_record(guildID)
+        for player in server["players"]:
+            if player["id"] == discordID:
+                self.mmr = player["mmr"]
+                self.rank = player["rank"]
+
 
     def dump(self):
         data = {
@@ -118,9 +128,12 @@ class Queue():
         for player in match.teamTwo.GetPlayers():
             teamTwoPlayersStr += f"<@{player.id}>\n"
 
+        teamOneWinPercent = round(get_expected_score(match.teamOne, match.teamTwo) * 100)
+        teamTwoWinPercent = round(100 - teamOneWinPercent)
+
         embed = discord.Embed(title=f"Match {match.matchNum} is ready!")
-        embed.add_field(name="Team 1", value=teamOnePlayersStr, inline=True)
-        embed.add_field(name="Team 2", value=teamTwoPlayersStr, inline=True)
+        embed.add_field(name=f"Team 1 - {teamOneWinPercent}%", value=teamOnePlayersStr, inline=True)
+        embed.add_field(name=f"Team 2 - {teamTwoWinPercent}%", value=teamTwoPlayersStr, inline=True)
 
         await ctx.send("", embed=embed)
 
