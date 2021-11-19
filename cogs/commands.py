@@ -1,3 +1,4 @@
+from logging import currentframe
 import discord
 from discord.ext import commands
 from discord.ext.commands.cog import Cog
@@ -6,6 +7,7 @@ from Managers.QueueManager import queueManagers, VoteTypes, Vote, GAME_SIZE
 from Managers.MatchManager import matchManager
 from Managers.DatabaseManager import update_record, insert_record, find_record
 from Managers.PlayerManager import Player
+import math
 
 class CommandsCog(commands.Cog):
     def __init__(self, bot):
@@ -34,7 +36,7 @@ class CommandsCog(commands.Cog):
 
                     await ctx.reply("", embed=embed)
 
-                    await queueManager.GetCurrentQueue().CheckQueueFull(ctx)
+                    await queueManager.GetCurrentQueue().CheckQueueFull(ctx, rank)
 
     @commands.command()
     async def status(self, ctx):
@@ -94,7 +96,7 @@ class CommandsCog(commands.Cog):
                     await ctx.send("", embed=embed)
 
 
-    #Make this only work in score report
+    #!TODO Make this only work in score report
     @commands.command()
     async def report(self, ctx: commands.Context, matchNum, result):
         result = result.lower()
@@ -130,6 +132,41 @@ class CommandsCog(commands.Cog):
                             embed.set_footer(text=f"{playersNeeded} more players needed to pop!")
 
                             await ctx.reply("", embed=embed)
+
+    @commands.command()
+    async def leaderboard(self, ctx):
+        if ctx.channel.name[0:4] == "rank":
+            rank = ctx.channel.name[-1].upper()
+            server = find_record(ctx.guild.id)
+            for dbRank in server["ranks"]:
+                if rank == dbRank["name"]:
+                    playersInRank = []
+                    for player in server["players"]:
+                        if player["rank"] == rank:
+                            playersInRank.append(player)
+                    playersInRank.sort(key=lambda x: x["mmr"], reverse=True) 
+                    message = ""
+                    pagesNeeded = math.ceil(len(playersInRank) / 20) 
+                    currentPage = 1
+                    i = 1
+                    lastPage = False
+                    for player in playersInRank:
+                        message = message + f"{i}. <@{player['id']}> - {player['mmr']}\n"
+                        if i % 20 == 0:
+                            embed = discord.Embed(title=f"Leaderboard for Rank {rank}", description=message)
+                            embed.set_footer(text=f"Page ({currentPage}/{pagesNeeded})")
+                            await ctx.send("", embed = embed)
+                            currentPage = currentPage + 1
+                            message = ""
+                        else:
+                            lastPage = True
+                        i = i + 1
+                    
+                    if lastPage == True:
+                        embed = discord.Embed(title=f"Leaderboard for Rank {rank}", description=message)
+                        embed.set_footer(text=f"Page ({currentPage}/{pagesNeeded})")
+                        await ctx.send("", embed = embed)
+        
 
 def setup(bot):
     bot.add_cog(CommandsCog(bot))

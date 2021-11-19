@@ -171,7 +171,7 @@ class AdminCommands(commands.Cog):
 
         inDatabase = False
         for player in server["players"]:
-            if player["id"] == ctx.author.id:  
+            if player["id"] == user.id:  
                 inDatabase = True
         
         if inDatabase == False:
@@ -192,7 +192,7 @@ class AdminCommands(commands.Cog):
                         successful = True
                         update_record(ctx.guild.id, "$set", f"players.{i}.rank", rank)
                         update_record(ctx.guild.id, "$set", f"players.{i}.mmr", dbRank["mmr"])
-                        i = i + 1
+                    i = i + 1
 
         if successful == True:
             await ctx.message.add_reaction("✅")     
