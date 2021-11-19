@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from Managers.MatchManager import matchManager
 from Managers.QueueManager import queueManager
-from Managers.DatabaseManager import insert_record
+from Managers.DatabaseManager import find_record, insert_record
 
 MOD_ROLE = "mods"
 
@@ -116,6 +116,22 @@ class AdminCommands(commands.Cog):
             await ctx.message.add_reaction("✅")     
         else:
             await ctx.message.add_reaction("❌")  
+    
+    @commands.has_role(MOD_ROLE)
+    @commands.command()
+    async def lookup(self, ctx, user: discord.User):
+        server = find_record(ctx.guild.id)
+        userInfo = ""
+        foundUser = False
+        for player in server["players"]:
+            if user.id == player["id"]:
+                foundUser = True
+                userInfo = f"**User ID**: {player['id']}\n**Rank**: {player['rank']}\n**Elo**: {player['mmr']}"
+        if foundUser == True:
+            embed = discord.Embed(title=f"Lookup results for {user.display_name}#{user.discriminator}", description=userInfo)
+            await ctx.reply("", embed=embed)
+        else:
+            await ctx.message.add_reaction("❌")
     #endregion
     
 def setup(bot):

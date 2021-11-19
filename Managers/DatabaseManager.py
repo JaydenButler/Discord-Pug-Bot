@@ -16,9 +16,6 @@ def report_existing_match(id, value):
     RECORDS.update_one({"_id": id}, {"$set": {f"matches.{index}.reported": value["reported"]}})
     RECORDS.update_one({"_id": id}, {"$set": {f"matches.{index}.reportedBy": value["reportedBy"]}})
 
-
-
-
 def find_record(id):
     return RECORDS.find_one({"_id": id})
 
