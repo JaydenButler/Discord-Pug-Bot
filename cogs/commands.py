@@ -18,22 +18,6 @@ class CommandsCog(commands.Cog):
             if player.id == ctx.author.id:
                 return
 
-        server = find_record(ctx.guild.id)
-
-        inDatabase = False
-        for player in server["players"]:
-            if player["id"] == ctx.author.id:  
-                inDatabase = True
-        
-        if inDatabase == False:
-            newPlayer = {
-                "id": ctx.author.id,
-                "rank": None,
-                "mmr": 1500,
-            }
-            update_record(ctx.guild.id, "$push", "players", newPlayer)
-                
-
         newPlayer = Player(ctx.author.id, ctx.guild.id)
 
         await queueManager.GetCurrentQueue().AddPlayer(newPlayer)

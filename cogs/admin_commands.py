@@ -1,8 +1,9 @@
 import discord
+from discord.abc import GuildChannel
 from discord.ext import commands
 from Managers.MatchManager import matchManager
 from Managers.QueueManager import queueManager
-from Managers.DatabaseManager import find_record, insert_record
+from Managers.DatabaseManager import find_record, insert_record, update_record, delete_record
 
 MOD_ROLE = "mods"
 
@@ -15,10 +16,12 @@ class AdminCommands(commands.Cog):
     @commands.is_owner()
     @commands.command()
     async def setup(self, ctx: commands.Context):
+        delete_record(ctx.guild.id)
         data = {
             "_id": ctx.guild.id,
             "players": [],
-            "matches": []
+            "matches": [],
+            "ranks": []
         }
         insert_record(data)
         await ctx.reply("Complete.")
@@ -132,6 +135,108 @@ class AdminCommands(commands.Cog):
             await ctx.reply("", embed=embed)
         else:
             await ctx.message.add_reaction("❌")
+
+    @commands.has_role(MOD_ROLE)
+    @commands.command()
+    async def addrank(self, ctx: commands.Context, rank: str, mmr: int):
+        server = find_record(ctx.guild.id)
+        rank = rank.upper()
+        guild = ctx.guild
+
+        role = None
+        
+        #check if role exists
+        roleExists = False
+        for guildRole in guild.roles:
+            if f"Rank {rank}" == guildRole:
+                roleExists = True
+
+        if roleExists == False:
+            role = await guild.create_role(name=f"Rank {rank}")
+
+        #check if channel exists
+        channelExists = False
+
+        for guildChannel in guild.channels:
+            if guildChannel.name == f"rank-{rank.lower()}":
+                channelExists = True
+        
+        if channelExists == False:
+            overwrites = {
+                guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                guild.me: discord.PermissionOverwrite(read_messages=True),
+                role: discord.PermissionOverwrite(read_messages=True)
+            }
+            await guild.create_text_channel(f"rank-{rank.lower()}", overwrites=overwrites)
+        
+        #add to DB
+        rankExists = False
+        
+        for dbRank in server["ranks"]:
+            if rank == dbRank:
+                rankExists = True
+        
+        if rankExists == False:
+            newRank = {
+                "name": rank,
+                "mmr": mmr
+            }
+            update_record(ctx.guild.id, "$push", "ranks", newRank)
+            
+
+        await ctx.send("Complete.")
+    
+    @commands.has_role(MOD_ROLE)
+    @commands.command()
+    async def setrank(self, ctx, user: discord.User, rank: str):
+        server = find_record(ctx.guild.id)
+        rank = rank.upper()
+        successful = False
+
+        inDatabase = False
+        for player in server["players"]:
+            if player["id"] == ctx.author.id:  
+                inDatabase = True
+        
+        if inDatabase == False:
+            newPlayer = {
+                "id": user.id,
+                "rank": None,
+                "mmr": 1500,
+            }
+            update_record(ctx.guild.id, "$push", "players", newPlayer)
+
+        server = find_record(ctx.guild.id)
+
+        i = 0
+        for dbRank in server["ranks"]:
+            if rank == dbRank["name"]:
+                for player in server["players"]:
+                    if user.id == player["id"]:
+                        successful = True
+                        update_record(ctx.guild.id, "$set", f"players.{i}.rank", rank)
+                        update_record(ctx.guild.id, "$set", f"players.{i}.mmr", dbRank["mmr"])
+                        i = i + 1
+
+        if successful == True:
+            await ctx.message.add_reaction("✅")     
+        else:
+            await ctx.message.add_reaction("❌") 
+
+    @commands.command()
+    async def ranks(self, ctx):
+        server = find_record(ctx.guild.id)
+        ranks = ""
+
+        for rank in server["ranks"]:
+            role = discord.utils.get(ctx.guild.roles, name=f"Rank {rank['name']}")
+            channel = discord.utils.get(ctx.guild.channels, name=f"rank-{rank['name'].lower()}")
+            ranks = ranks + f"Rank {rank['name']} ({rank['mmr']}) - {role.mention} - {channel.mention}\n"
+
+        embed = discord.Embed(title="Current Ranks", description=ranks)
+
+        await ctx.send("", embed=embed)
+
     #endregion
     
 def setup(bot):
