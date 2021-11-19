@@ -8,6 +8,7 @@ from Managers.EloManager import get_expected_score
 
 global queueManager
 GAME_SIZE = 2
+GUILD_ID = 751206578329485393
 
 class Team():
     def __init__(self):
@@ -34,10 +35,10 @@ class Queue():
         self.votes = []
         self.votesNeeded = GAME_SIZE #In the future change this to half the queue size
     
-    async def AddVote(self, ctx, vote):
+    async def AddVote(self, ctx, vote, rank):
         self.votes.append(vote)
         if len(self.votes) == self.votesNeeded:
-            await self.DoRandomTeamSelection(ctx)
+            await self.DoRandomTeamSelection(ctx, rank)
     
     async def AddPlayer(self, player):
         self.players.append(player)
@@ -51,12 +52,14 @@ class Queue():
         else:
             return len(self.players)
     
-    async def CheckQueueFull(self, ctx):
+    async def CheckQueueFull(self, ctx, rank):
         if(self.GetQueueSize() == GAME_SIZE):
-            await queueManager.GetCurrentQueue().PostQueueTypeVote(ctx)
+            for queueManager in queueManagers:
+                if rank == queueManager.rank:
+                    await queueManager.GetCurrentQueue().PostQueueTypeVote(ctx)
 
     #Send this match info to the database
-    async def DoRandomTeamSelection(self, ctx: commands.Context):
+    async def DoRandomTeamSelection(self, ctx: commands.Context, rank):
         print("A queue has popped!")
 
         playersToAdd = self.GetQueueSize() - 1
@@ -86,7 +89,9 @@ class Queue():
 
         newMatch = newMatch.SaveMatch(ctx.guild.id)
 
-        queueManager.CreateNewQueue()
+        for queueManager in queueManagers:
+            if rank == queueManager.rank:
+                queueManager.CreateNewQueue()
 
         await self.PostQueue(ctx, newMatch)
         
@@ -120,8 +125,9 @@ class Queue():
         await ctx.send("", embed=embed)
 
 class QueueManager():
-    def __init__(self):
+    def __init__(self, rank):
         self.currentQueue = Queue()
+        self.rank = rank
 
     def GetCurrentQueue(self):
         return self.currentQueue
@@ -139,4 +145,10 @@ class VoteTypes(Enum):
     BALANCED = "b"
     CAPTAINS = "c"
 
-queueManager = QueueManager()
+queueManagers = []
+
+server = find_record(GUILD_ID)
+
+for rank in server["ranks"]:
+    newQueue = QueueManager(rank["name"])
+    queueManagers.append(newQueue)

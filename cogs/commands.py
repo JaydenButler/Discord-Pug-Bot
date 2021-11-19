@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands.cog import Cog
 from pymongo.message import update
-from Managers.QueueManager import queueManager, VoteTypes, Vote, GAME_SIZE
+from Managers.QueueManager import queueManagers, VoteTypes, Vote, GAME_SIZE
 from Managers.MatchManager import matchManager
 from Managers.DatabaseManager import update_record, insert_record, find_record
 from Managers.PlayerManager import Player
@@ -11,73 +11,90 @@ class CommandsCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    #TODO: Set their mmr based on their rank
     @commands.command()
     async def q(self, ctx: commands.Context):
-        for player in queueManager.GetCurrentQueue().players:
-            if player.id == ctx.author.id:
-                return
+        if ctx.channel.name[0:4] == "rank":
+            rank = ctx.channel.name[-1].upper()
+            for queueManager in queueManagers:
+                if rank == queueManager.rank:
+                    for player in queueManager.GetCurrentQueue().players:
+                        if player.id == ctx.author.id:
+                            return
 
-        newPlayer = Player(ctx.author.id, ctx.guild.id)
+                    newPlayer = Player(ctx.author.id, ctx.guild.id)
 
-        await queueManager.GetCurrentQueue().AddPlayer(newPlayer)
+                    await queueManager.GetCurrentQueue().AddPlayer(newPlayer)
 
-        currentQueueSize = queueManager.GetCurrentQueue().GetQueueSize()
+                    currentQueueSize = queueManager.GetCurrentQueue().GetQueueSize()
 
-        playersNeeded = GAME_SIZE - currentQueueSize
+                    playersNeeded = GAME_SIZE - currentQueueSize
 
-        embed = discord.Embed(title=f"Someone has joined the queue ({currentQueueSize}/{GAME_SIZE})", description=f"{ctx.author.mention} has joined the queue")
-        embed.set_footer(text=f"{playersNeeded} more players needed to pop!")
+                    embed = discord.Embed(title=f"Player has joined the queue ({currentQueueSize}/{GAME_SIZE})", description=f"{ctx.author.mention} has joined the queue")
+                    embed.set_footer(text=f"{playersNeeded} more players needed to pop!")
 
-        await ctx.reply("", embed=embed)
+                    await ctx.reply("", embed=embed)
 
-        await queueManager.GetCurrentQueue().CheckQueueFull(ctx)
+                    await queueManager.GetCurrentQueue().CheckQueueFull(ctx)
 
     @commands.command()
     async def status(self, ctx):
-        playersStr = ""
-        
-        if not queueManager.GetCurrentQueue().players:
-            playersStr = "Queue is empty"
-        else:
-            for player in queueManager.GetCurrentQueue().players:
-                playersStr += f"<@{player.id}>\n"
-        
-        playersNeeded = GAME_SIZE - queueManager.GetCurrentQueue().GetQueueSize()
-        
-        embed = discord.Embed(title="Current members in the queue", description=playersStr)
-        embed.set_footer(text=f"{playersNeeded} more players needed to pop!")
-        
-        await ctx.reply("", embed=embed)
+        if ctx.channel.name[4] == "rank":
+            rank = ctx.channel.name[-1].upper()
+            for queueManager in queueManagers:
+                if rank == queueManager.rank:
+                    playersStr = ""
+                    
+                    if not queueManager.GetCurrentQueue().players:
+                        playersStr = "Queue is empty"
+                    else:
+                        for player in queueManager.GetCurrentQueue().players:
+                            playersStr += f"<@{player.id}>\n"
+                    
+                    playersNeeded = GAME_SIZE - queueManager.GetCurrentQueue().GetQueueSize()
+                    
+                    embed = discord.Embed(title="Current members in the queue", description=playersStr)
+                    embed.set_footer(text=f"{playersNeeded} more players needed to pop!")
+                    
+                    await ctx.reply("", embed=embed)
     
     @commands.command()
     async def r(self, ctx: commands.Context):
-        playerVoted = False
-        currentQueue = queueManager.GetCurrentQueue()
-        for player in currentQueue.players:
-            for vote in currentQueue.votes:
-                if vote.player == player:
-                    playerVoted = True
-                else:
+        if ctx.channel.name[0:4] == "rank":
+            rank = ctx.channel.name[-1].upper()
+            for queueManager in queueManagers:
+                if rank == queueManager.rank:
                     playerVoted = False
-            if player.id == ctx.author.id and currentQueue.inVote is True and playerVoted is False:
-                newVote = Vote(player, VoteTypes.RANDOM)
-                await ctx.message.add_reaction("✅")  
-                await currentQueue.AddVote(ctx, newVote)  
+                    currentQueue = queueManager.GetCurrentQueue()
+                    for player in currentQueue.players:
+                        for vote in currentQueue.votes:
+                            if vote.player == player:
+                                playerVoted = True
+                            else:
+                                playerVoted = False
+                        if player.id == ctx.author.id and currentQueue.inVote is True and playerVoted is False:
+                            newVote = Vote(player, VoteTypes.RANDOM)
+                            await ctx.message.add_reaction("✅")  
+                            await currentQueue.AddVote(ctx, newVote, rank)  
 
     @commands.command()
     async def votes(self, ctx):
-        votes = ""
+        if ctx.channel.name[0:4] == "rank":
+            rank = ctx.channel.name[-1].upper()
+            for queueManager in queueManagers:
+                if rank == queueManager.rank:
+                    votes = ""
 
-        voteCount = len(queueManager.GetCurrentQueue().votes)
+                    voteCount = len(queueManager.GetCurrentQueue().votes)
 
-        for vote in queueManager.GetCurrentQueue().votes:
-            votes = votes + f"<@{vote.player.id}> voted for **`{vote.vote.name}`**\n"
+                    for vote in queueManager.GetCurrentQueue().votes:
+                        votes = votes + f"<@{vote.player.id}> voted for **`{vote.vote.name}`**\n"
 
-        embed = discord.Embed(title="Current votes", description=votes)
-        embed.set_footer(text=f"{voteCount}/{queueManager.GetCurrentQueue().GetQueueSize()} people have voted")
-        await ctx.send("", embed=embed)
+                    embed = discord.Embed(title="Current votes", description=votes)
+                    embed.set_footer(text=f"{voteCount}/{queueManager.GetCurrentQueue().GetQueueSize()} people have voted")
+                    await ctx.send("", embed=embed)
 
+
+    #Make this only work in score report
     @commands.command()
     async def report(self, ctx: commands.Context, matchNum, result):
         result = result.lower()
@@ -97,18 +114,22 @@ class CommandsCog(commands.Cog):
     
     @commands.command()
     async def leave(self, ctx):
-        for player in queueManager.GetCurrentQueue().players:
-            if player.id == ctx.author.id and queueManager.GetCurrentQueue().inVote == False:
-                queueManager.GetCurrentQueue().players.remove(player)
+        if ctx.channel.name[0:4] == "rank":
+            rank = ctx.channel.name[-1].upper()
+            for queueManager in queueManagers:
+                if rank == queueManager.rank:
+                    for player in queueManager.GetCurrentQueue().players:
+                        if player.id == ctx.author.id and queueManager.GetCurrentQueue().inVote == False:
+                            queueManager.GetCurrentQueue().players.remove(player)
 
-                currentQueueSize = queueManager.GetCurrentQueue().GetQueueSize()
+                            currentQueueSize = queueManager.GetCurrentQueue().GetQueueSize()
 
-                playersNeeded = GAME_SIZE - currentQueueSize
+                            playersNeeded = GAME_SIZE - currentQueueSize
 
-                embed = discord.Embed(title=f"Someone has left the queue ({currentQueueSize}/{GAME_SIZE})", description=f"{ctx.author.mention} has left the queue")
-                embed.set_footer(text=f"{playersNeeded} more players needed to pop!")
+                            embed = discord.Embed(title=f"Player has left the queue ({currentQueueSize}/{GAME_SIZE})", description=f"{ctx.author.mention} has left the queue")
+                            embed.set_footer(text=f"{playersNeeded} more players needed to pop!")
 
-                await ctx.reply("", embed=embed)
+                            await ctx.reply("", embed=embed)
 
 def setup(bot):
     bot.add_cog(CommandsCog(bot))

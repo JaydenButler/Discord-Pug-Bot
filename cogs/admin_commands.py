@@ -2,7 +2,6 @@ import discord
 from discord.abc import GuildChannel
 from discord.ext import commands
 from Managers.MatchManager import matchManager
-from Managers.QueueManager import queueManager
 from Managers.DatabaseManager import find_record, insert_record, update_record, delete_record
 
 MOD_ROLE = "mods"
@@ -25,29 +24,6 @@ class AdminCommands(commands.Cog):
         }
         insert_record(data)
         await ctx.reply("Complete.")
-
-    @commands.is_owner()
-    @commands.command()
-    async def force_pop(self, ctx):
-        if queueManager.GetCurrentQueue().GetQueueSize() > 1:
-
-            teams = queueManager.GetCurrentQueue().DoQueuePop()
-            
-            teamOnePlayersStr = ""
-            for player in teams[0].GetPlayers():
-                teamOnePlayersStr += f"<@{player.id}>\n"
-
-            teamTwoPlayersStr = ""
-            for player in teams[1].GetPlayers():
-                teamTwoPlayersStr += f"<@{player.id}>\n"
-
-            embed = discord.Embed(title="The queue has popped!")
-            embed.add_field(name="Team 1", value=teamOnePlayersStr, inline=True)
-            embed.add_field(name="Team 2", value=teamTwoPlayersStr, inline=True)
-
-            await ctx.reply("", embed=embed)
-        else:
-            await ctx.reply("Queue is too small to pop... Get some friends to play with!")
     
     @commands.is_owner()
     @commands.command()
