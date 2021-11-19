@@ -99,20 +99,21 @@ class CommandsCog(commands.Cog):
     #!TODO Make this only work in score report
     @commands.command()
     async def report(self, ctx: commands.Context, matchNum, result):
-        result = result.lower()
-        if matchNum.isnumeric() == False:
-            await ctx.reply("Please enter the match number is digit form, eg. **`500`**")
-            return
-        if result != "w" and result != "l":
-            await ctx.reply("Please report the result as either a W for a win, or L for a loss")
-            return
+        if ctx.channel.name == "score-report":
+            result = result.lower()
+            if matchNum.isnumeric() == False:
+                await ctx.reply("Please enter the match number is digit form, eg. **`500`**")
+                return
+            if result != "w" and result != "l":
+                await ctx.reply("Please report the result as either a W for a win, or L for a loss")
+                return
 
-        reported = matchManager.ReportMatch(ctx.guild.id, ctx.author.id, int(matchNum), result)
-        
-        if reported == True:
-            await ctx.message.add_reaction("✅")     
-        else:
-            await ctx.message.add_reaction("❌")  
+            reported = matchManager.ReportMatch(ctx.guild.id, ctx.author.id, int(matchNum), result)
+            
+            if reported == True:
+                await ctx.message.add_reaction("✅")     
+            else:
+                await ctx.message.add_reaction("❌")  
     
     @commands.command()
     async def leave(self, ctx):

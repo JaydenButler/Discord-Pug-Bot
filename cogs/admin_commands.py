@@ -23,7 +23,7 @@ class AdminCommands(commands.Cog):
             "ranks": []
         }
         insert_record(data)
-        await ctx.reply("Complete.")
+        await ctx.message.add_reaction("✅")   
     
     @commands.is_owner()
     @commands.command()
@@ -160,7 +160,7 @@ class AdminCommands(commands.Cog):
             update_record(ctx.guild.id, "$push", "ranks", newRank)
             
 
-        await ctx.send("Complete.")
+        await ctx.message.add_reaction("✅")   
     
     @commands.has_role(MOD_ROLE)
     @commands.command()
