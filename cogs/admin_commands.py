@@ -1,7 +1,7 @@
 import discord
-from discord.abc import GuildChannel
+import math
 from discord.ext import commands
-from Managers.QueueManager import SetupQueueManagers
+from Managers.QueueManager import SetupQueueManagers, queueManagers
 from Managers.MatchManager import matchManager
 from Managers.DatabaseManager import find_record, insert_record, update_record, delete_record
 
@@ -27,6 +27,12 @@ class AdminCommands(commands.Cog):
         await ctx.message.add_reaction("✅")   
     
     @commands.command()
+    async def autorank(self, ctx, role, rank):
+        role = discord.utils.get(ctx.guild.roles, name=f"Rank {rank}")
+        for member in role.members:
+            await self.setrank(ctx, member, rank)
+
+    @commands.command()
     async def resetqm(self, ctx):
         SetupQueueManagers()
         await ctx.message.add_reaction("✅")   
@@ -46,7 +52,7 @@ class AdminCommands(commands.Cog):
     #region Mod cmds
     @commands.has_role(MOD_ROLE)
     @commands.command()
-    async def lookup(self, ctx: commands.Context, matchNum):
+    async def matchinfo(self, ctx: commands.Context, matchNum):
         if matchNum.isnumeric() == False:
             await ctx.reply("Please enter the match number is digit form, eg. **`500`**")
             return
@@ -104,14 +110,14 @@ class AdminCommands(commands.Cog):
     
     @commands.has_role(MOD_ROLE)
     @commands.command()
-    async def lookup(self, ctx, user: discord.User):
+    async def userinfo(self, ctx, user: discord.User):
         server = find_record(ctx.guild.id)
         userInfo = ""
         foundUser = False
         for player in server["players"]:
             if user.id == player["id"]:
                 foundUser = True
-                userInfo = f"**User ID**: {player['id']}\n**Rank**: {player['rank']}\n**Elo**: {player['mmr']}"
+                userInfo = f"**User ID**: {player['id']}\n**Rank**: {player['rank']}\n**Elo**: {round(player['mmr'])}"
         if foundUser == True:
             embed = discord.Embed(title=f"Lookup results for {user.display_name}#{user.discriminator}", description=userInfo)
             await ctx.reply("", embed=embed)
@@ -201,10 +207,12 @@ class AdminCommands(commands.Cog):
                     i = i + 1
 
         if successful == True:
-            await ctx.message.add_reaction("✅")     
+            await ctx.message.add_reaction("✅")
+            await ctx.reply(f"Added rank {rank} to {user.mention}")     
         else:
             await ctx.message.add_reaction("❌") 
 
+    @commands.has_role(MOD_ROLE)
     @commands.command()
     async def ranks(self, ctx):
         server = find_record(ctx.guild.id)
@@ -219,6 +227,50 @@ class AdminCommands(commands.Cog):
 
         await ctx.send("", embed=embed)
 
+    @commands.has_role(MOD_ROLE)
+    @commands.command()
+    async def leaderboards(self, ctx, rank):
+        rank = rank.upper()
+        server = find_record(ctx.guild.id)
+        for dbRank in server["ranks"]:
+            if rank == dbRank["name"]:
+                playersInRank = []
+                for player in server["players"]:
+                    if player["rank"] == rank:
+                        playersInRank.append(player)
+                playersInRank.sort(key=lambda x: x["mmr"], reverse=True) 
+                message = ""
+                pagesNeeded = math.ceil(len(playersInRank) / 20) 
+                currentPage = 1
+                i = 1
+                lastPage = False
+                for player in playersInRank:
+                    message = message + f"{i}. <@{player['id']}> - {round(player['mmr'])}\n"
+                    if i % 20 == 0:
+                        embed = discord.Embed(title=f"Leaderboard for Rank {rank}", description=message)
+                        embed.set_footer(text=f"Page ({currentPage}/{pagesNeeded})")
+                        await ctx.send("", embed = embed)
+                        currentPage = currentPage + 1
+                        message = ""
+                    else:
+                        lastPage = True
+                    i = i + 1
+                
+                if lastPage == True:
+                    embed = discord.Embed(title=f"Leaderboard for Rank {rank}", description=message)
+                    embed.set_footer(text=f"Page ({currentPage}/{pagesNeeded})")
+                    await ctx.send("", embed = embed)
+    
+    @commands.has_role(MOD_ROLE)
+    @commands.command()
+    async def cancel(self, ctx):
+        if ctx.channel.name[0:4] == "rank":
+            rank = ctx.channel.name[-1].upper()
+        
+        for queueManager in queueManagers:
+            if rank == queueManager.rank:
+                queueManager.CreateNewQueue()
+        await ctx.message.add_reaction("✅")   
     #endregion
     
 def setup(bot):

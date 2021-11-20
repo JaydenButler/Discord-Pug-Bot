@@ -33,7 +33,7 @@ class Queue():
         self.players = []
         self.inVote = False
         self.votes = []
-        self.votesNeeded = GAME_SIZE #In the future change this to half the queue size
+        self.votesNeeded = GAME_SIZE / 2 #In the future change this to half the queue size
     
     async def AddVote(self, ctx, vote, rank):
         self.votes.append(vote)
@@ -148,7 +148,7 @@ class VoteTypes(Enum):
 queueManagers = []
 
 def SetupQueueManagers():
-    queueManagers = []
+    queueManagers.clear()
 
     server = find_record(GUILD_ID)
 

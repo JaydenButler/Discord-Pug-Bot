@@ -40,7 +40,7 @@ class CommandsCog(commands.Cog):
 
     @commands.command()
     async def status(self, ctx):
-        if ctx.channel.name[4] == "rank":
+        if ctx.channel.name[0:4] == "rank":
             rank = ctx.channel.name[-1].upper()
             for queueManager in queueManagers:
                 if rank == queueManager.rank:
@@ -92,7 +92,7 @@ class CommandsCog(commands.Cog):
                         votes = votes + f"<@{vote.player.id}> voted for **`{vote.vote.name}`**\n"
 
                     embed = discord.Embed(title="Current votes", description=votes)
-                    embed.set_footer(text=f"{voteCount}/{queueManager.GetCurrentQueue().GetQueueSize()} people have voted")
+                    embed.set_footer(text=f"{voteCount}/{round(GAME_SIZE/2)} people have voted")
                     await ctx.send("", embed=embed)
 
 
@@ -152,7 +152,7 @@ class CommandsCog(commands.Cog):
                     i = 1
                     lastPage = False
                     for player in playersInRank:
-                        message = message + f"{i}. <@{player['id']}> - {player['mmr']}\n"
+                        message = message + f"{i}. <@{player['id']}> - {round(player['mmr'])}\n"
                         if i % 20 == 0:
                             embed = discord.Embed(title=f"Leaderboard for Rank {rank}", description=message)
                             embed.set_footer(text=f"Page ({currentPage}/{pagesNeeded})")
