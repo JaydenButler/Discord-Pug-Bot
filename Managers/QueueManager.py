@@ -8,7 +8,7 @@ from Managers.EloManager import get_expected_score
 
 global queueManager
 GAME_SIZE = 2
-GUILD_ID = 751206578329485393
+GUILD_ID = 907069401507983380
 
 class Team():
     def __init__(self):
@@ -147,8 +147,13 @@ class VoteTypes(Enum):
 
 queueManagers = []
 
-server = find_record(GUILD_ID)
+def SetupQueueManagers():
+    queueManagers = []
 
-for rank in server["ranks"]:
-    newQueue = QueueManager(rank["name"])
-    queueManagers.append(newQueue)
+    server = find_record(GUILD_ID)
+
+    for rank in server["ranks"]:
+        newQueue = QueueManager(rank["name"])
+        queueManagers.append(newQueue)
+
+SetupQueueManagers()

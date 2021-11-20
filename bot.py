@@ -32,6 +32,7 @@ handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
+bot.remove_command("help")
 bot.run(os.environ.get("BOT_TOKEN"), reconnect=True)
 
 #!TODO:

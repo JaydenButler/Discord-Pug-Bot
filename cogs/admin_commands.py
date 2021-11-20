@@ -1,6 +1,7 @@
 import discord
 from discord.abc import GuildChannel
 from discord.ext import commands
+from Managers.QueueManager import SetupQueueManagers
 from Managers.MatchManager import matchManager
 from Managers.DatabaseManager import find_record, insert_record, update_record, delete_record
 
@@ -23,6 +24,11 @@ class AdminCommands(commands.Cog):
             "ranks": []
         }
         insert_record(data)
+        await ctx.message.add_reaction("✅")   
+    
+    @commands.command()
+    async def resetqm(self, ctx):
+        SetupQueueManagers()
         await ctx.message.add_reaction("✅")   
     
     @commands.is_owner()
