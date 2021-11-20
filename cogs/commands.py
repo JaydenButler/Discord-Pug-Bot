@@ -18,25 +18,26 @@ class CommandsCog(commands.Cog):
         if ctx.channel.name[0:4] == "rank":
             rank = ctx.channel.name[-1].upper()
             for queueManager in queueManagers:
-                if rank == queueManager.rank:
-                    for player in queueManager.GetCurrentQueue().players:
-                        if player.id == ctx.author.id:
-                            return
+                if queueManager.GetCurrentQueue().GetQueueSize() > 6:
+                    if rank == queueManager.rank:
+                        for player in queueManager.GetCurrentQueue().players:
+                            if player.id == ctx.author.id:
+                                return
 
-                    newPlayer = Player(ctx.author.id, ctx.guild.id)
+                        newPlayer = Player(ctx.author.id, ctx.guild.id)
 
-                    await queueManager.GetCurrentQueue().AddPlayer(newPlayer)
+                        await queueManager.GetCurrentQueue().AddPlayer(newPlayer)
 
-                    currentQueueSize = queueManager.GetCurrentQueue().GetQueueSize()
+                        currentQueueSize = queueManager.GetCurrentQueue().GetQueueSize()
 
-                    playersNeeded = GAME_SIZE - currentQueueSize
+                        playersNeeded = GAME_SIZE - currentQueueSize
 
-                    embed = discord.Embed(title=f"Player has joined the queue ({currentQueueSize}/{GAME_SIZE})", description=f"{ctx.author.mention} has joined the queue")
-                    embed.set_footer(text=f"{playersNeeded} more players needed to pop!")
+                        embed = discord.Embed(title=f"Player has joined the queue ({currentQueueSize}/{GAME_SIZE})", description=f"{ctx.author.mention} has joined the queue")
+                        embed.set_footer(text=f"{playersNeeded} more players needed to pop!")
 
-                    await ctx.reply("", embed=embed)
+                        await ctx.reply("", embed=embed)
 
-                    await queueManager.GetCurrentQueue().CheckQueueFull(ctx, rank)
+                        await queueManager.GetCurrentQueue().CheckQueueFull(ctx, rank)
 
     @commands.command()
     async def status(self, ctx):
