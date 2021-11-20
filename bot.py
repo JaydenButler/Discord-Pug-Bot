@@ -1,16 +1,19 @@
 import logging
+import os
 import discord
 from discord.ext import commands
-from dotenv import dotenv_values
+from dotenv import load_dotenv
 
-config = dotenv_values(".env")
+global BOTCONFIG
+
+load_dotenv(".env")
 
 intents = discord.Intents.default()
 intents.members = True
 intents.messages = True
 intents.guild_messages = True
 
-initial_extensions = ["cogs.commands"]
+initial_extensions = ["cogs.commands", "cogs.admin_commands"]
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
@@ -29,4 +32,8 @@ handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w'
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
-bot.run(config["BOT_TOKEN"], reconnect=True)
+bot.remove_command("help")
+bot.run(os.environ.get("BOT_TOKEN"), reconnect=True)
+
+#!TODO:
+# Make the team mmr avg in EloManager

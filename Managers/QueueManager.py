@@ -1,22 +1,14 @@
-import json
 import random
 import discord
 from discord.ext import commands
 from enum import Enum
-from match import Match
+from Managers.DatabaseManager import find_record
+from Managers.MatchManager import Match
+from Managers.EloManager import get_expected_score
 
 global queueManager
 GAME_SIZE = 2
-
-class Player():
-    def __init__(self, discordID):
-        self.id = discordID
-
-    def dump(self):
-        data = {
-            "id": self.id
-        }
-        return data
+GUILD_ID = 907069401507983380
 
 class Team():
     def __init__(self):
@@ -43,10 +35,10 @@ class Queue():
         self.votes = []
         self.votesNeeded = GAME_SIZE #In the future change this to half the queue size
     
-    async def AddVote(self, ctx, vote):
+    async def AddVote(self, ctx, vote, rank):
         self.votes.append(vote)
         if len(self.votes) == self.votesNeeded:
-            await self.DoRandomTeamSelection(ctx)
+            await self.DoRandomTeamSelection(ctx, rank)
     
     async def AddPlayer(self, player):
         self.players.append(player)
@@ -60,12 +52,14 @@ class Queue():
         else:
             return len(self.players)
     
-    async def CheckQueueFull(self, ctx):
+    async def CheckQueueFull(self, ctx, rank):
         if(self.GetQueueSize() == GAME_SIZE):
-            await queueManager.GetCurrentQueue().PostQueueTypeVote(ctx)
+            for queueManager in queueManagers:
+                if rank == queueManager.rank:
+                    await queueManager.GetCurrentQueue().PostQueueTypeVote(ctx)
 
     #Send this match info to the database
-    async def DoRandomTeamSelection(self, ctx: commands.Context):
+    async def DoRandomTeamSelection(self, ctx: commands.Context, rank):
         print("A queue has popped!")
 
         playersToAdd = self.GetQueueSize() - 1
@@ -93,9 +87,11 @@ class Queue():
 
         newMatch = Match(teamOne, teamTwo)
 
-        newMatch = newMatch.SaveMatch()
+        newMatch = newMatch.SaveMatch(ctx.guild.id)
 
-        queueManager.CreateNewQueue()
+        for queueManager in queueManagers:
+            if rank == queueManager.rank:
+                queueManager.CreateNewQueue()
 
         await self.PostQueue(ctx, newMatch)
         
@@ -119,15 +115,19 @@ class Queue():
         for player in match.teamTwo.GetPlayers():
             teamTwoPlayersStr += f"<@{player.id}>\n"
 
+        teamOneWinPercent = round(get_expected_score(match.teamOne, match.teamTwo) * 100)
+        teamTwoWinPercent = round(100 - teamOneWinPercent)
+
         embed = discord.Embed(title=f"Match {match.matchNum} is ready!")
-        embed.add_field(name="Team 1", value=teamOnePlayersStr, inline=True)
-        embed.add_field(name="Team 2", value=teamTwoPlayersStr, inline=True)
+        embed.add_field(name=f"Team 1 - {teamOneWinPercent}%", value=teamOnePlayersStr, inline=True)
+        embed.add_field(name=f"Team 2 - {teamTwoWinPercent}%", value=teamTwoPlayersStr, inline=True)
 
         await ctx.send("", embed=embed)
 
 class QueueManager():
-    def __init__(self):
+    def __init__(self, rank):
         self.currentQueue = Queue()
+        self.rank = rank
 
     def GetCurrentQueue(self):
         return self.currentQueue
@@ -145,4 +145,15 @@ class VoteTypes(Enum):
     BALANCED = "b"
     CAPTAINS = "c"
 
-queueManager = QueueManager()
+queueManagers = []
+
+def SetupQueueManagers():
+    queueManagers = []
+
+    server = find_record(GUILD_ID)
+
+    for rank in server["ranks"]:
+        newQueue = QueueManager(rank["name"])
+        queueManagers.append(newQueue)
+
+SetupQueueManagers()
