@@ -18,8 +18,9 @@ class CommandsCog(commands.Cog):
         if ctx.channel.name[0:4] == "rank":
             rank = ctx.channel.name[-1].upper()
             for queueManager in queueManagers:
-                if queueManager.GetCurrentQueue().GetQueueSize() > 6:
-                    if rank == queueManager.rank:
+                if rank == queueManager.rank:
+                    queueSize = queueManager.GetCurrentQueue().GetQueueSize()
+                    if queueSize < 6:
                         for player in queueManager.GetCurrentQueue().players:
                             if player.id == ctx.author.id:
                                 return
