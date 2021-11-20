@@ -7,7 +7,7 @@ from Managers.MatchManager import Match
 from Managers.EloManager import get_expected_score
 
 global queueManager
-GAME_SIZE = 2
+GAME_SIZE = 6
 GUILD_ID = 907069401507983380
 
 class Team():
@@ -99,7 +99,7 @@ class Queue():
     async def PostQueueTypeVote(self, ctx):
         self.inVote = True
         print("Posting the queue type vote")
-        embed = discord.Embed(title="Please vote on the queue type below!")
+        embed = discord.Embed(title="Please vote on the queue type below!", description="ONLY RANDOM TEAMS WORK AT THE MOMENT, PLEASE VOTE !r <3")
         embed.add_field(name="Balanced", value="```!b```", inline=True)
         embed.add_field(name="Captains", value="```!c```", inline=True)
         embed.add_field(name="Random", value="```!r```", inline=True)
