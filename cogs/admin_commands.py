@@ -1,11 +1,12 @@
 import discord
 import math
 from discord.ext import commands
+from Managers.PlayerManager import update_player_elo
 from Managers.QueueManager import SetupQueueManagers, queueManagers
 from Managers.MatchManager import matchManager
 from Managers.DatabaseManager import find_record, insert_record, update_record, delete_record
 
-MOD_ROLE = "mods"
+MOD_ROLE = "Moderators"
 
 class AdminCommands(commands.Cog):
     def __init__(self, bot):
@@ -206,6 +207,11 @@ class AdminCommands(commands.Cog):
                         update_record(ctx.guild.id, "$set", f"players.{i}.mmr", dbRank["mmr"])
                     i = i + 1
 
+        role = discord.utils.get(ctx.guild.roles, name=f"Rank {rank}")
+
+        user: discord.Member = user
+        user.add_roles(role)
+
         if successful == True:
             await ctx.message.add_reaction("✅")
             await ctx.reply(f"Added rank {rank} to {user.mention}")     
@@ -271,6 +277,11 @@ class AdminCommands(commands.Cog):
             if rank == queueManager.rank:
                 queueManager.CreateNewQueue()
         await ctx.message.add_reaction("✅")   
+    
+    @commands.command()
+    async def updateelo(self, ctx, player: discord.Member, amount: int):
+        update_player_elo(ctx.guild.id, player.id, amount)
+        await ctx.message.add_reaction("✅")  
     #endregion
     
 def setup(bot):
