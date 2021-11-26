@@ -1,6 +1,9 @@
 import os
 import pymongo
 import certifi
+from dotenv import load_dotenv
+
+load_dotenv(".env")
 
 CLIENT = pymongo.MongoClient(os.environ.get("MONGO_URL"), tlsCAFile=certifi.where())
 

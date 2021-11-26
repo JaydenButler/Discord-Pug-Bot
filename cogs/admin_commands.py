@@ -177,7 +177,7 @@ class AdminCommands(commands.Cog):
     
     @commands.has_role(MOD_ROLE)
     @commands.command()
-    async def setrank(self, ctx, user: discord.User, rank: str):
+    async def setrank(self, ctx, user: discord.Member, rank: str):
         server = find_record(ctx.guild.id)
         rank = rank.upper()
         successful = False

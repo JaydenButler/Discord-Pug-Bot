@@ -1,4 +1,5 @@
 from Managers.DatabaseManager import find_record, update_record
+import datetime
 
 def update_player_elo(guildID, playerID, amount):
     server = find_record(guildID)
@@ -14,6 +15,8 @@ class Player():
         self.id = discordID
         self.mmr = 0,
         self.rank = None
+        self.timeQueued = datetime.datetime.now()
+
         server = find_record(guildID)
         for player in server["players"]:
             if player["id"] == discordID:
@@ -25,6 +28,6 @@ class Player():
         data = {
             "id": self.id,
             "mmr": self.mmr,
-            "rank": self.rank
+            "rank": self.rank,
         }
         return data

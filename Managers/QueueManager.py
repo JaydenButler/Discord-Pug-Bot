@@ -107,13 +107,18 @@ class Queue():
 
 
     async def PostQueue(self, ctx: commands.Context, match):
+        
+        playersToPing = ""
+
         teamOnePlayersStr = ""
         for player in match.teamOne.GetPlayers():
             teamOnePlayersStr += f"<@{player.id}>\n"
+            playersToPing += f"<@{player.id}> "
 
         teamTwoPlayersStr = ""
         for player in match.teamTwo.GetPlayers():
             teamTwoPlayersStr += f"<@{player.id}>\n"
+            playersToPing += f"<@{player.id}> "
 
         teamOneWinPercent = round(get_expected_score(match.teamOne, match.teamTwo) * 100)
         teamTwoWinPercent = round(100 - teamOneWinPercent)
@@ -122,7 +127,7 @@ class Queue():
         embed.add_field(name=f"Team 1 - {teamOneWinPercent}%", value=teamOnePlayersStr, inline=True)
         embed.add_field(name=f"Team 2 - {teamTwoWinPercent}%", value=teamTwoPlayersStr, inline=True)
 
-        await ctx.send("", embed=embed)
+        await ctx.send(playersToPing, embed=embed)
 
 class QueueManager():
     def __init__(self, rank):
