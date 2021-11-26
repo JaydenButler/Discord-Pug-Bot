@@ -92,7 +92,7 @@ class CommandsCog(commands.Cog):
                     voteCount = len(queueManager.GetCurrentQueue().votes)
 
                     for vote in queueManager.GetCurrentQueue().votes:
-                        votes = votes + f"<@{vote.player.id}> voted for **`{vote.vote.name}`**\n"
+                        votes += f"<@{vote.player.id}> voted for **`{vote.vote.name}`**\n"
 
                     embed = discord.Embed(title="Current votes", description=votes)
                     embed.set_footer(text=f"{voteCount}/{round(GAME_SIZE/2)} people have voted")
@@ -155,16 +155,16 @@ class CommandsCog(commands.Cog):
                     i = 1
                     lastPage = False
                     for player in playersInRank:
-                        message = message + f"{i}. <@{player['id']}> - {round(player['mmr'])}\n"
+                        message += f"{i}. <@{player['id']}> - {round(player['mmr'])}\n"
                         if i % 20 == 0:
                             embed = discord.Embed(title=f"Leaderboard for Rank {rank}", description=message)
                             embed.set_footer(text=f"Page ({currentPage}/{pagesNeeded})")
                             await ctx.send("", embed = embed)
-                            currentPage = currentPage + 1
+                            currentPage += 1
                             message = ""
                         else:
                             lastPage = True
-                        i = i + 1
+                        i += 1
                     
                     if lastPage == True:
                         embed = discord.Embed(title=f"Leaderboard for Rank {rank}", description=message)
