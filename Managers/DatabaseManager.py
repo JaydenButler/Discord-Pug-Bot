@@ -12,7 +12,7 @@ RECORDS = DATABASE["Servers"]
 
 def update_record(id, method, key, value):
     RECORDS.update_one({"_id": id}, {method: {key: value}})
- 
+
 def report_existing_match(id, value):
     index = int(value["matchNum"] - 1)
     RECORDS.update_one({"_id": id}, {"$set": {f"matches.{index}.winner": value["winner"]}})
