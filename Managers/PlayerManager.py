@@ -1,5 +1,5 @@
 from Managers.DatabaseManager import find_record, update_record
-import datetime
+from datetime import datetime, timedelta
 
 def update_player_elo(guildID, playerID, amount):
     server = find_record(guildID)
@@ -11,11 +11,12 @@ def update_player_elo(guildID, playerID, amount):
         i = i + 1
 
 class Player():
-    def __init__(self, discordID, guildID):
+    def __init__(self, discordID, guildID, queueLength):
         self.id = discordID
         self.mmr = 0,
         self.rank = None
-        self.timeQueued = datetime.datetime.now()
+        self.timeQueued = datetime.now()
+        self.queueLengthTime = queueLength
 
         server = find_record(guildID)
         for player in server["players"]:

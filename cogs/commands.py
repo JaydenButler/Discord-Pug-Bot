@@ -15,7 +15,7 @@ class CommandsCog(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def q(self, ctx: commands.Context):
+    async def q(self, ctx: commands.Context, length: int = 60):
         if ctx.channel.name[0:4] == "rank":
             rank = ctx.channel.name[-1].upper()
             for queueManager in queueManagers:
@@ -26,7 +26,7 @@ class CommandsCog(commands.Cog):
                             if player.id == ctx.author.id:
                                 return
 
-                        newPlayer = Player(ctx.author.id, ctx.guild.id)
+                        newPlayer = Player(ctx.author.id, ctx.guild.id, length)
 
                         await queueManager.GetCurrentQueue().AddPlayer(newPlayer)
 

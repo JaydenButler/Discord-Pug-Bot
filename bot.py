@@ -23,12 +23,12 @@ if __name__ == '__main__':
     for extension in initial_extensions:
         bot.load_extension(extension)
 
-@tasks.loop(minutes = 5)
+@tasks.loop(minutes = 1)
 async def check_queues():
     for queueManager in queueManagers:
         for player in queueManager.GetCurrentQueue().players:
             elapsed = datetime.now() - player.timeQueued
-            if elapsed > timedelta(hours=1):
+            if elapsed > timedelta(minutes=player.queueLengthTime):
                 queueManager.GetCurrentQueue().players.remove(player)
                 user = await bot.fetch_user(player.id)
                 await user.send("You were removed from the queue due to inactivity. Please re queue if you wish to play.")
