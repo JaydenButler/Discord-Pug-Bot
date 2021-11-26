@@ -46,4 +46,4 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 bot.remove_command("help")
-bot.run(os.environ.get("BOT_TOKEN"), reconnect=True)
+bot.run(os.environ.get("TESTBOT_TOKEN"), reconnect=True)

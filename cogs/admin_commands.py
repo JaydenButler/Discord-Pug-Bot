@@ -210,7 +210,7 @@ class AdminCommands(commands.Cog):
         role = discord.utils.get(ctx.guild.roles, name=f"Rank {rank}")
 
         user: discord.Member = user
-        user.add_roles(role)
+        await user.add_roles(role)
 
         if successful == True:
             await ctx.message.add_reaction("✅")

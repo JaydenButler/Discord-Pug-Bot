@@ -52,10 +52,17 @@ class Queue():
         else:
             return len(self.players)
     
+    #Check if player is in another queue here
     async def CheckQueueFull(self, ctx, rank):
         if(self.GetQueueSize() == GAME_SIZE):
             for queueManager in queueManagers:
                 if rank == queueManager.rank:
+                    for player in queueManager.GetCurrentQueue().players:
+                        for checkQueueManager in queueManagers:
+                            if queueManager != checkQueueManager:
+                                for checkPlayer in checkQueueManager.GetCurrentQueue().players:
+                                    if player.id == checkPlayer.id:
+                                        checkQueueManager.GetCurrentQueue().players.remove(checkPlayer)
                     await queueManager.GetCurrentQueue().PostQueueTypeVote(ctx)
 
     #Send this match info to the database
