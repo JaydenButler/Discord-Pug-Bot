@@ -227,7 +227,7 @@ class AdminCommands(commands.Cog):
         for rank in server["ranks"]:
             role = discord.utils.get(ctx.guild.roles, name=f"Rank {rank['name']}")
             channel = discord.utils.get(ctx.guild.channels, name=f"rank-{rank['name'].lower()}")
-            ranks += "Rank {rank['name']} ({rank['mmr']}) - {role.mention} - {channel.mention}\n"
+            ranks += f"Rank {rank['name']} ({rank['mmr']}) - {role.mention} - {channel.mention}\n"
 
         embed = discord.Embed(title="Current Ranks", description=ranks)
 
@@ -251,7 +251,7 @@ class AdminCommands(commands.Cog):
                 i = 1
                 lastPage = False
                 for player in playersInRank:
-                    message += "{i}. <@{player['id']}> - {round(player['mmr'])}\n"
+                    message += f"{i}. <@{player['id']}> - {round(player['mmr'])}\n"
                     if i % 20 == 0:
                         embed = discord.Embed(title=f"Leaderboard for Rank {rank}", description=message)
                         embed.set_footer(text=f"Page ({currentPage}/{pagesNeeded})")
@@ -269,14 +269,24 @@ class AdminCommands(commands.Cog):
     
     @commands.has_role(MOD_ROLE)
     @commands.command()
-    async def cancel(self, ctx):
-        if ctx.channel.name[0:4] == "rank":
-            rank = ctx.channel.name[-1].upper()
+    async def cancel(self, ctx, matchNum: int = None):
+        if matchNum == None:
+            if ctx.channel.name[0:4] == "rank":
+                rank = ctx.channel.name[-1].upper()
+            
+            for queueManager in queueManagers:
+                if rank == queueManager.rank:
+                    queueManager.CreateNewQueue()
+            await ctx.message.add_reaction("✅")   
+        else:
+            try:
+                index = matchNum - 1
+                reported = update_record(ctx.guild.id, "$set", f"matches.{index}.reported", True)
         
-        for queueManager in queueManagers:
-            if rank == queueManager.rank:
-                queueManager.CreateNewQueue()
-        await ctx.message.add_reaction("✅")   
+                await ctx.message.add_reaction("✅")        
+            
+            except:
+                await ctx.message.add_reaction("❌")
     
     @commands.command()
     async def updateelo(self, ctx, player: discord.Member, amount: int):
