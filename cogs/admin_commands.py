@@ -81,12 +81,12 @@ class AdminCommands(commands.Cog):
             teamOnePlayers = ""
             for player in currentMatch["teams"][0]["playerData"]["players"]:
                 id = player["id"]
-                teamOnePlayers = teamOnePlayers + f"<@{id}>\n"
+                teamOnePlayers += f"<@{id}>\n"
 
             teamTwoPlayers = ""
             for player in currentMatch["teams"][1]["playerData"]["players"]:
                 id = player["id"]
-                teamTwoPlayers = teamTwoPlayers + f"<@{id}>\n"
+                teamTwoPlayers += f"<@{id}>\n"
 
             embed.add_field(name="Team 1", value=teamOnePlayers, inline=True)
             embed.add_field(name="Team 2", value=teamTwoPlayers, inline=True)
@@ -205,7 +205,7 @@ class AdminCommands(commands.Cog):
                         successful = True
                         update_record(ctx.guild.id, "$set", f"players.{i}.rank", rank)
                         update_record(ctx.guild.id, "$set", f"players.{i}.mmr", dbRank["mmr"])
-                    i = i + 1
+                    i += 1
 
         role = discord.utils.get(ctx.guild.roles, name=f"Rank {rank}")
 
@@ -227,7 +227,7 @@ class AdminCommands(commands.Cog):
         for rank in server["ranks"]:
             role = discord.utils.get(ctx.guild.roles, name=f"Rank {rank['name']}")
             channel = discord.utils.get(ctx.guild.channels, name=f"rank-{rank['name'].lower()}")
-            ranks = ranks + f"Rank {rank['name']} ({rank['mmr']}) - {role.mention} - {channel.mention}\n"
+            ranks += "Rank {rank['name']} ({rank['mmr']}) - {role.mention} - {channel.mention}\n"
 
         embed = discord.Embed(title="Current Ranks", description=ranks)
 
@@ -251,16 +251,16 @@ class AdminCommands(commands.Cog):
                 i = 1
                 lastPage = False
                 for player in playersInRank:
-                    message = message + f"{i}. <@{player['id']}> - {round(player['mmr'])}\n"
+                    message += "{i}. <@{player['id']}> - {round(player['mmr'])}\n"
                     if i % 20 == 0:
                         embed = discord.Embed(title=f"Leaderboard for Rank {rank}", description=message)
                         embed.set_footer(text=f"Page ({currentPage}/{pagesNeeded})")
                         await ctx.send("", embed = embed)
-                        currentPage = currentPage + 1
+                        currentPage += 1
                         message = ""
                     else:
                         lastPage = True
-                    i = i + 1
+                    i += 1
                 
                 if lastPage == True:
                     embed = discord.Embed(title=f"Leaderboard for Rank {rank}", description=message)
