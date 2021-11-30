@@ -96,11 +96,13 @@ class MatchManager():
                     teamOneMMR = 0
                     for player in match["teams"][0]["playerData"]["players"]:
                         teamOneMMR = teamOneMMR + int(player["mmr"])
+                    teamOneMMR = teamOneMMR / 3
 
                     #!MAKE THIS AVG
                     teamTwoMMR = 0
                     for player in match["teams"][1]["playerData"]["players"]:
                         teamTwoMMR = teamTwoMMR + int(player["mmr"])
+                    teamTwoMMR = teamTwoMMR / 3
                     
                     if winner == 1:
                         #For the winning team

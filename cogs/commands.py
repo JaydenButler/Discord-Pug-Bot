@@ -26,6 +26,9 @@ class CommandsCog(commands.Cog):
                             if player.id == ctx.author.id:
                                 return
 
+                        if length > 120:
+                            length = 120
+                        
                         newPlayer = Player(ctx.author.id, ctx.guild.id, length)
 
                         await queueManager.GetCurrentQueue().AddPlayer(newPlayer)

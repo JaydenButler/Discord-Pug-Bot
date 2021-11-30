@@ -207,6 +207,12 @@ class AdminCommands(commands.Cog):
                         update_record(ctx.guild.id, "$set", f"players.{i}.mmr", dbRank["mmr"])
                     i += 1
 
+        userRoles = user.roles
+
+        for role in userRoles:
+            if role.name[0:4].lower() == "rank":
+                await user.remove_roles(role)
+
         role = discord.utils.get(ctx.guild.roles, name=f"Rank {rank}")
 
         user: discord.Member = user
